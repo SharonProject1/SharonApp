@@ -1,21 +1,25 @@
 package com.example.myapplication
 
 // 필요한 import 문들
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -50,16 +55,67 @@ class MainActivity : ComponentActivity() {
 }
 @Composable
 fun NextScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "다음 화면입니다!",
-            fontSize = 48.sp,
-            color = Color.Black,
-            modifier = Modifier.padding(16.dp)
+    val context = LocalContext.current
+    val sensorManager = remember { context.getSystemService(SensorManager::class.java) }
+    val accelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
+
+    var xValue by remember { mutableStateOf(0f) }
+    var yValue by remember { mutableStateOf(0f) }
+    var zValue by remember { mutableStateOf(0f) }
+    var showWarning by remember { mutableStateOf(false) }
+
+    val threshold = 15f // 움직임 감지 기준값 설정
+
+    DisposableEffect(Unit) {
+        val sensorEventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                event?.let {
+                    xValue = it.values[0]
+                    yValue = it.values[1]
+                    zValue = it.values[2]
+
+                    val acceleration = kotlin.math.sqrt(xValue * xValue + yValue * yValue + zValue * zValue)
+
+                    if (acceleration > threshold) {
+                        showWarning = true
+                    }
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                // 정확도 변경 시 처리할 내용이 있으면 여기에 작성
+            }
+        }
+
+        sensorManager.registerListener(
+            sensorEventListener,
+            accelerometer,
+            SensorManager.SENSOR_DELAY_NORMAL
         )
+
+        onDispose {
+            sensorManager.unregisterListener(sensorEventListener)
+        }
+    }
+
+    Column {
+        Text(text = "가속도계 데이터:")
+        Text(text = "X축: $xValue")
+        Text(text = "Y축: $yValue")
+        Text(text = "Z축: $zValue")
+
+        if (showWarning) {
+            AlertDialog(
+                onDismissRequest = { showWarning = false },
+                confirmButton = {
+                    Button(onClick = { showWarning = false }) {
+                        Text("확인")
+                    }
+                },
+                title = { Text("경고") },
+                text = { Text("움직임이 너무 큽니다!") }
+            )
+        }
     }
 }
 @Composable
@@ -80,9 +136,10 @@ fun GameReadyScreen(onGameReady: () -> Unit) {
             // 중앙에 배치된 버튼
             Button(
                 onClick = { onGameReady() },
-                modifier = Modifier.size(200.dp, 50.dp)
+                modifier = Modifier.size(400.dp, 100.dp)
             ) {
-                Text(text = "게임 준비")
+                Text(text = "게임 준비",
+                    fontSize = 50.sp)
             }
         }
     }
