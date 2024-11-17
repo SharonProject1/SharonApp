@@ -214,7 +214,7 @@ fun TerminationScreen(nextScreen: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("종료 화면(그냥 이거 팝업으로 띄우자")
+        Text("종료 화면(그냥 이거 팝업으로 띄우자)")
         Button(
             onClick = {nextScreen()},
             modifier = Modifier.align(Alignment.CenterHorizontally)
