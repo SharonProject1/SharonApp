@@ -5,13 +5,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication"
+    namespace = "com.example.sharon"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
-        minSdk = 24
-        targetSdk = 34
+        applicationId = "com.example.sharon"
+        minSdk = 26
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -40,7 +40,7 @@ android {
 }
 
 dependencies {
-    implementation("androidx.compose.material3:material3:1.1.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
