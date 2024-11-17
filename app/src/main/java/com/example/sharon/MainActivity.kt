@@ -41,22 +41,25 @@ class MainActivity : ComponentActivity() {
         setContent {
             SharonTheme {
                 var currentScreen by remember { mutableStateOf("StartScreen") }
-                // StartScreen - HomeScreen - WaitingRoomCScreen - CountdownScreen - InGameScreen - ResultScreen
+                // StartScreen - HomeScreen - WaitingRoomScreen - CountdownScreen - InGameScreen - TerminationScreen - ResultScreen
                 // Nav 기능으로 화면 전환하자
                 when (currentScreen) {
                     "StartScreen" -> StartScreen(nextScreen = {
                         currentScreen = "HomeScreen"
                     })
                     "HomeScreen" -> HomeScreen(nextScreen = {
-                        currentScreen = "WaitingRoomCScreen"
+                        currentScreen = "WaitingRoomScreen"
                     })
-                    "WaitingRoomCScreen" -> WaitingRoomCScreen(nextScreen = {
+                    "WaitingRoomScreen" -> WaitingRoomScreen(nextScreen = {
                         currentScreen = "CountdownScreen"
                     })
                     "CountdownScreen" -> CountdownScreen(nextScreen = {
                         currentScreen = "InGameScreen"
                     })
                     "InGameScreen" -> InGameScreen(nextScreen = {
+                        currentScreen = "TerminationScreen"
+                    })
+                    "TerminationScreen" -> TerminationScreen(nextScreen = {
                         currentScreen = "ResultScreen"
                     })
                     "ResultScreen" -> ResultScreen(nextScreen = {
@@ -106,6 +109,7 @@ fun HomeScreen(nextScreen: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(50.dp)) // 상단 여백
@@ -114,7 +118,7 @@ fun HomeScreen(nextScreen: () -> Unit) {
             fontSize = 24.sp,
             style = MaterialTheme.typography.headlineMedium
         )
-        Spacer(modifier = Modifier.height(180.dp)) // 텍스트와 입력 칸 사이 여백
+        Spacer(modifier = Modifier.height(100.dp)) // 텍스트와 입력 칸 사이 여백
         TextField(
             value = codeInput,
             onValueChange = { codeInput = it },
@@ -134,7 +138,7 @@ fun HomeScreen(nextScreen: () -> Unit) {
 }
 
 @Composable
-fun WaitingRoomCScreen(nextScreen: () -> Unit) {
+fun WaitingRoomScreen(nextScreen: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -244,22 +248,25 @@ fun ResultScreen(nextScreen: () -> Unit) {
 fun SharonPreview(){
     SharonTheme {
         var currentScreen by remember { mutableStateOf("StartScreen") }
-        // StartScreen - HomeScreen - WaitingRoomCScreen - CountdownScreen - InGameScreen - ResultScreen
+        // StartScreen - HomeScreen - WaitingRoomScreen - CountdownScreen - InGameScreen - ResultScreen
         // Nav 기능으로 화면 전환하자
         when (currentScreen) {
             "StartScreen" -> StartScreen(nextScreen = {
                 currentScreen = "HomeScreen"
             })
             "HomeScreen" -> HomeScreen(nextScreen = {
-                currentScreen = "WaitingRoomCScreen"
+                currentScreen = "WaitingRoomScreen"
             })
-            "WaitingRoomCScreen" -> WaitingRoomCScreen(nextScreen = {
+            "WaitingRoomScreen" -> WaitingRoomScreen(nextScreen = {
                 currentScreen = "CountdownScreen"
             })
             "CountdownScreen" -> CountdownScreen(nextScreen = {
                 currentScreen = "InGameScreen"
             })
             "InGameScreen" -> InGameScreen(nextScreen = {
+                currentScreen = "TerminationScreen"
+            })
+            "TerminationScreen" -> TerminationScreen(nextScreen = {
                 currentScreen = "ResultScreen"
             })
             "ResultScreen" -> ResultScreen(nextScreen = {
