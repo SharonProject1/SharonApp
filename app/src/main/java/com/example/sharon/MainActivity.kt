@@ -296,21 +296,91 @@ fun CountdownScreen(nextScreen: () -> Unit) {
 
 @Composable
 fun InGameScreen(nextScreen: () -> Unit) {
+    var containerSize by remember { mutableStateOf(Size.Zero) }
+
+    val timeLeft by remember { mutableStateOf(180) }
+    val numberOfPlayers by remember { mutableStateOf(10) }
+    val numberOfCurrentSurvivors by remember { mutableStateOf(numberOfPlayers) }
+
     Scaffold { innerPadding ->
         Box(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
                 .fillMaxSize()
                 .padding(innerPadding)
+                .onGloballyPositioned { coordinates ->
+                    containerSize = coordinates.size.toSize()
+                }
         ) {
             Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(16.dp)
             ) {
-                Text("인게임 화면")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "남은 시간: ",
+                        fontSize = (containerSize.width * 2/100).toInt().sp
+                    )
+                    if(timeLeft > 90) {
+                        Text(
+                            text = "$timeLeft",
+                            fontSize = (containerSize.width * 6/100).toInt().sp,
+                            color = Color(0xff00dd00)
+                        )
+                    } else if(timeLeft in 31..90) {
+                        Text(
+                            text = "$timeLeft",
+                            fontSize = (containerSize.width * 6/100).toInt().sp,
+                            color = Color(0xfff8d000)
+                        )
+                    } else {
+                        Text(
+                            text = "$timeLeft",
+                            fontSize = (containerSize.width * 6/100).toInt().sp,
+                            color = Color(0xfff00000)
+                        )
+                    }
+                    Text(
+                        text = "s",
+                        fontSize = (containerSize.width * 2/100).toInt().sp
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "현재 생존자: ",
+                        fontSize = (containerSize.width * 2/100).toInt().sp
+                    )
+                    if(numberOfCurrentSurvivors/numberOfPlayers.toFloat() > 2/3f) {
+                        Text(
+                            text = "$numberOfCurrentSurvivors/$numberOfPlayers",
+                            fontSize = (containerSize.width * 6/100).toInt().sp,
+                            color = Color(0xff00dd00)
+                        )
+                    } else if(numberOfCurrentSurvivors/numberOfPlayers.toFloat() <= 2/3f && numberOfCurrentSurvivors/numberOfPlayers.toFloat() > 1/3f) {
+                        Text(
+                            text = "$numberOfCurrentSurvivors/$numberOfPlayers",
+                            fontSize = (containerSize.width * 6/100).toInt().sp,
+                            color = Color(0xfff8d000)
+                        )
+                    } else {
+                        Text(
+                            text = "$numberOfCurrentSurvivors/$numberOfPlayers",
+                            fontSize = (containerSize.width * 6/100).toInt().sp,
+                            color = Color(0xfff00000)
+                        )
+                    }
+                    Text(
+                        text = "명",
+                        fontSize = (containerSize.width * 2/100).toInt().sp
+                    )
+                }
                 Button(
                     onClick = {nextScreen()},
                     colors = ButtonDefaults.buttonColors(
