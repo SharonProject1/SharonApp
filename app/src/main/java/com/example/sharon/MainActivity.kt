@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -30,13 +31,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import com.example.sharon.ui.theme.SharonTheme
 import kotlinx.coroutines.delay
 
@@ -80,6 +85,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun StartScreen(nextScreen: () -> Unit) {
+    var containerSize by remember { mutableStateOf(Size.Zero) }
+
     Scaffold { innerPadding ->
         Box(
             modifier = Modifier
@@ -93,17 +100,20 @@ fun StartScreen(nextScreen: () -> Unit) {
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxSize()
+                    .onGloballyPositioned { coordinates ->
+                        containerSize = coordinates.size.toSize()
+                    }
             ) {
                 Text(
                     "무궁화 꽃이",
-                    fontSize = 70.sp,
+                    fontSize = (containerSize.width * 5/100).toInt().sp,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     "피었습니다!",
-                    fontSize = 70.sp,
+                    fontSize = (containerSize.width * 5/100).toInt().sp,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
@@ -125,6 +135,7 @@ fun StartScreen(nextScreen: () -> Unit) {
 
 @Composable
 fun HomeScreen(nextScreen: () -> Unit) {
+    var containerSize by remember { mutableStateOf(Size.Zero) }
     var codeInput by remember { mutableStateOf(TextFieldValue("")) }
 
     Scaffold { innerPadding ->
@@ -140,14 +151,20 @@ fun HomeScreen(nextScreen: () -> Unit) {
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxSize()
+                    .onGloballyPositioned { coordinates ->
+                        containerSize = coordinates.size.toSize()
+                    }
             ) {
                 Spacer(modifier = Modifier.height(50.dp))
                 Text(
-                    text = "무궁화 꽃이 피었습니다",
-                    fontSize = 24.sp,
-                    style = MaterialTheme.typography.headlineMedium
+                    text = "무궁화 꽃이",
+                    fontSize = (containerSize.width * 5/100).toInt().sp
                 )
-                Spacer(modifier = Modifier.height(100.dp))
+                Text(
+                    text = "피었습니다",
+                    fontSize = (containerSize.width * 5/100).toInt().sp
+                )
+                Spacer(modifier = Modifier.height((containerSize.height * 5/100).toInt().dp))
                 TextField(
                     value = codeInput,
                     onValueChange = { codeInput = it },
