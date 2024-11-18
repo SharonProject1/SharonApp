@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -123,6 +125,15 @@ class InGame {
                                     fontSize = (containerSize.height * 2/100).toInt().sp
                                 )
                             }
+                            Button(
+                                onClick = {nextScreen()},
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                )
+                            ) {
+                                Text("다음 화면")
+                            }
                         }
                     }
                 }
@@ -202,6 +213,16 @@ class InGame {
                                     text = "현재 생존자(명)",
                                     fontSize = (containerSize.width * 2/100).toInt().sp
                                 )
+                            }
+                            Button(
+                                onClick = {nextScreen()},
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                ),
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                Text("다음 화면")
                             }
                         }
                     }
