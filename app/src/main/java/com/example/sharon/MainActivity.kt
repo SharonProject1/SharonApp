@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.ModifierInfo
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -105,18 +108,19 @@ fun StartScreen(nextScreen: () -> Unit) {
                     }
             ) {
                 Text(
-                    "무궁화 꽃이",
-                    fontSize = (containerSize.width * 5/100).toInt().sp,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    text = "무궁화",
+                    fontSize = (containerSize.width * 8/100).toInt().sp,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    "피었습니다!",
-                    fontSize = (containerSize.width * 5/100).toInt().sp,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    text = "꽃이",
+                    fontSize = (containerSize.width * 7/100).toInt().sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "피었습니다!",
+                    fontSize = (containerSize.width * 6/100).toInt().sp,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Button(
                     onClick = {nextScreen()},
@@ -157,18 +161,25 @@ fun HomeScreen(nextScreen: () -> Unit) {
             ) {
                 Spacer(modifier = Modifier.height(50.dp))
                 Text(
-                    text = "무궁화 꽃이",
-                    fontSize = (containerSize.width * 5/100).toInt().sp
+                    text = "무궁화",
+                    fontSize = (containerSize.width * 8/100).toInt().sp,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "피었습니다",
-                    fontSize = (containerSize.width * 5/100).toInt().sp
+                    text = "꽃이",
+                    fontSize = (containerSize.width * 7/100).toInt().sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "피었습니다!",
+                    fontSize = (containerSize.width * 6/100).toInt().sp,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height((containerSize.height * 5/100).toInt().dp))
                 TextField(
                     value = codeInput,
                     onValueChange = { codeInput = it },
-                    placeholder = { Text(text = "코드를 입력하세요") },
+                    placeholder = { Text(text = "코드 입력") },
                     modifier = Modifier.fillMaxWidth(0.8f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                 )
@@ -222,34 +233,62 @@ fun WaitingRoomScreen(nextScreen: () -> Unit) {
 
 @Composable
 fun CountdownScreen(nextScreen: () -> Unit) {
-    var count by remember { mutableStateOf(3) }
+    var containerSize by remember { mutableStateOf(Size.Zero) }
+    var count by remember { mutableStateOf(4) }
 
     LaunchedEffect(Unit) {
-        while (count > -1) {
-            delay(1000)
+        while (count >= 0) {
+            if(count == 4) delay(3000)
+            else delay(1000)
             count--
         }
         nextScreen()
     }
 
-    val displayText = if (count > 0) "$count" else "땡!"
+    val displayText = if(count in 1..3) "$count" else "시작"
+
     Scaffold { innerPadding ->
         Box(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.background)
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
             Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(8.dp)
+                    .onGloballyPositioned { coordinates ->
+                        containerSize = coordinates.size.toSize()
+                    }
             ) {
-                Text(
-                    text = displayText,
-                    fontSize = 300.sp,
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.displayLarge
-                )
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp)
+                ) {
+                    if(count == 4) {
+                        Text(
+                            text = "이제 게임이 시작됩니다...",
+                            fontSize = (containerSize.width * 3 / 100).toInt().sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Text(
+                            text = "출발선에 서 주십시오.",
+                            fontSize = (containerSize.width * 3/100).toInt().sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    } else {
+                        Text(
+                            text = displayText,
+                            fontSize = (containerSize.width * 3*(5 - count) / 100).toInt().sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
             }
         }
     }
@@ -355,30 +394,31 @@ fun ResultScreen(nextScreen: () -> Unit) {
 @Composable
 fun SharonPreview(){
     SharonTheme {
-        var currentScreen by remember { mutableStateOf("StartScreen") }
-
-        when (currentScreen) {
-            "StartScreen" -> StartScreen(nextScreen = {
-                currentScreen = "HomeScreen"
-            })
-            "HomeScreen" -> HomeScreen(nextScreen = {
-                currentScreen = "WaitingRoomScreen"
-            })
-            "WaitingRoomScreen" -> WaitingRoomScreen(nextScreen = {
-                currentScreen = "CountdownScreen"
-            })
-            "CountdownScreen" -> CountdownScreen(nextScreen = {
-                currentScreen = "InGameScreen"
-            })
-            "InGameScreen" -> InGameScreen(nextScreen = {
-                currentScreen = "TerminationScreen"
-            })
-            "TerminationScreen" -> TerminationScreen(nextScreen = {
-                currentScreen = "ResultScreen"
-            })
-            "ResultScreen" -> ResultScreen(nextScreen = {
-                currentScreen = "StartScreen"
-            })
-        }
+        InGameScreen(nextScreen = {})
+//        var currentScreen by remember { mutableStateOf("StartScreen") }
+//
+//        when (currentScreen) {
+//            "StartScreen" -> StartScreen(nextScreen = {
+//                currentScreen = "HomeScreen"
+//            })
+//            "HomeScreen" -> HomeScreen(nextScreen = {
+//                currentScreen = "WaitingRoomScreen"
+//            })
+//            "WaitingRoomScreen" -> WaitingRoomScreen(nextScreen = {
+//                currentScreen = "CountdownScreen"
+//            })
+//            "CountdownScreen" -> CountdownScreen(nextScreen = {
+//                currentScreen = "InGameScreen"
+//            })
+//            "InGameScreen" -> InGameScreen(nextScreen = {
+//                currentScreen = "TerminationScreen"
+//            })
+//            "TerminationScreen" -> TerminationScreen(nextScreen = {
+//                currentScreen = "ResultScreen"
+//            })
+//            "ResultScreen" -> ResultScreen(nextScreen = {
+//                currentScreen = "StartScreen"
+//            })
+//        }
     }
 }

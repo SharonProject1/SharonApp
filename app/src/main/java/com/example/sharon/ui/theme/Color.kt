@@ -3,7 +3,7 @@ package com.example.sharon.ui.theme
 import androidx.compose.ui.graphics.Color
 
 val Black = Color(0xFF000000)
-val gray = Color(0xFF1F1F1F)
+val gray = Color(0xFF101010)
 val White = Color(0xFFFFFFFF)
 val Ivory = Color(0xFFFFF7D1)
 
