@@ -1,5 +1,6 @@
 package com.example.sharon.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,12 +15,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.sharon.ui.theme.SharonTheme
 
 class WaitingRoom {
     companion object {
         @Composable
-        fun WaitingRoomScreen(nextScreen: () -> Unit) {
+        fun WaitingRoomScreen(configuration: Configuration, nextScreen: () -> Unit) {
+            val screenWidth = configuration.screenWidthDp
+            val screenHeight = configuration.screenHeightDp
+
             Scaffold { innerPadding ->
                 Box(
                     modifier = Modifier
@@ -49,5 +56,13 @@ class WaitingRoom {
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WaitingRoomScreenPreview() {
+    SharonTheme {
+        WaitingRoom.WaitingRoomScreen(LocalConfiguration.current, nextScreen = {})
     }
 }

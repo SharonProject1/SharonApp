@@ -1,5 +1,6 @@
 package com.example.sharon.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,18 +20,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
+import com.example.sharon.ui.theme.SharonTheme
 import kotlinx.coroutines.delay
 
 class Countdown {
     companion object {
         @Composable
-        fun CountdownScreen(nextScreen: () -> Unit) {
-            var containerSize by remember { mutableStateOf(Size.Zero) }
+        fun CountdownScreen(configuration: Configuration, nextScreen: () -> Unit) {
+            val screenWidth = configuration.screenWidthDp
+            val screenHeight = configuration.screenHeightDp
+            
             var count by remember { mutableStateOf(4) }
 
             LaunchedEffect(Unit) {
@@ -55,9 +58,6 @@ class Countdown {
                             .fillMaxSize()
                             .background(MaterialTheme.colorScheme.background)
                             .padding(8.dp)
-                            .onGloballyPositioned { coordinates ->
-                                containerSize = coordinates.size.toSize()
-                            }
                     ) {
                         Column(
                             verticalArrangement = Arrangement.Center,
@@ -69,20 +69,20 @@ class Countdown {
                             if(count == 4) {
                                 Text(
                                     text = "이제 게임이 시작됩니다...",
-                                    fontSize = (containerSize.width * 3 / 100).toInt().sp,
+                                    fontSize = (screenWidth * 7 / 100).sp,
                                     color = MaterialTheme.colorScheme.onBackground
                                 )
-                                Spacer(modifier = Modifier.height((containerSize.height * 2/100).toInt().dp))
+                                Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                                 Text(
                                     text = "출발선에 서 주십시오.",
-                                    fontSize = (containerSize.width * 3/100).toInt().sp,
+                                    fontSize = (screenWidth * 7/100).sp,
                                     color = MaterialTheme.colorScheme.onBackground
                                 )
                             } else {
                                 Text(
                                     text = displayText,
-                                    fontSize = (containerSize.width * 3*(5 - count) / 100).toInt().sp,
-                                    color = MaterialTheme.colorScheme.primary
+                                    fontSize = (screenWidth * 3*(5 - count) / 100).sp,
+                                    color = MaterialTheme.colorScheme.onBackground
                                 )
                             }
                         }
@@ -90,5 +90,13 @@ class Countdown {
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CountdownScreenPreview() {
+    SharonTheme {
+        Countdown.CountdownScreen(LocalConfiguration.current, nextScreen = {})
     }
 }

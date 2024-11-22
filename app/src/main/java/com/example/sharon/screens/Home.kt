@@ -1,5 +1,6 @@
 package com.example.sharon.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,19 +24,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
+import com.example.sharon.ui.theme.SharonTheme
 
 class Home {
     companion object {
         @Composable
-        fun HomeScreen(nextScreen: () -> Unit) {
-            var containerSize by remember { mutableStateOf(Size.Zero) }
+        fun HomeScreen(configuration: Configuration, nextScreen: () -> Unit) {
+            val screenWidth = configuration.screenWidthDp
+            val screenHeight = configuration.screenHeightDp
+
             var codeInput by remember { mutableStateOf(TextFieldValue("")) }
 
             Scaffold { innerPadding ->
@@ -51,21 +54,18 @@ class Home {
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxSize()
-                            .onGloballyPositioned { coordinates ->
-                                containerSize = coordinates.size.toSize()
-                            }
                     ) {
                         Text(
                             text = "무궁화 꽃이",
-                            fontSize = (containerSize.width * 5/100).toInt().sp,
+                            fontSize = (screenWidth * 10/100).sp,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "피었습니다!",
-                            fontSize = (containerSize.width * 5/100).toInt().sp,
+                            fontSize = (screenWidth * 10/100).sp,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.height((containerSize.height * 5/100).toInt().dp))
+                        Spacer(modifier = Modifier.height((screenHeight * 10/100).dp))
                         TextField(
                             value = codeInput,
                             onValueChange = { codeInput = it },
@@ -73,7 +73,7 @@ class Home {
                             modifier = Modifier.fillMaxWidth(0.8f),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
-                        Spacer(modifier = Modifier.height((containerSize.height * 1/100).toInt().dp))
+                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         Button(
                             onClick = { nextScreen() },
                             colors = ButtonDefaults.buttonColors(
@@ -88,5 +88,13 @@ class Home {
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    SharonTheme {
+        Home.HomeScreen(LocalConfiguration.current, nextScreen = {})
     }
 }

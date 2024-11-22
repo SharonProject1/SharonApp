@@ -1,5 +1,6 @@
 package com.example.sharon.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,12 +15,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.sharon.ui.theme.SharonTheme
 
 class Termination {
     companion object {
         @Composable
-        fun TerminationScreen(nextScreen: () -> Unit) {
+        fun TerminationScreen(configuration: Configuration, nextScreen: () -> Unit) {
+            val screenWidth = configuration.screenWidthDp
+            val screenHeight = configuration.screenHeightDp
+
             Scaffold { innerPadding ->
                 Box(
                     modifier = Modifier
@@ -49,5 +56,13 @@ class Termination {
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TerminationScreenPreview() {
+    SharonTheme {
+        Termination.TerminationScreen(LocalConfiguration.current, nextScreen = {})
     }
 }

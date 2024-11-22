@@ -1,75 +1,88 @@
 package com.example.sharon.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
+import com.example.sharon.ui.theme.SharonTheme
+import kotlinx.coroutines.delay
 
+// 완성
 class Start {
     companion object {
         @Composable
-        fun StartScreen(nextScreen: () -> Unit) {
-            var containerSize by remember { mutableStateOf(Size.Zero) }
+        fun StartScreen(configuration: Configuration, nextScreen: () -> Unit) {
+            val screenWidth = configuration.screenWidthDp
+            val screenHeight = configuration.screenHeightDp
 
-            Scaffold { innerPadding ->
-                Box(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.background)
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
+            LaunchedEffect(Unit) {
+                delay(3000)
+                nextScreen()
+            }
+
+            Scaffold(
+                bottomBar = {
+                    BottomAppBar (
+                        containerColor = MaterialTheme.colorScheme.background,
                         modifier = Modifier
+                            .height((screenHeight * 8/100).dp)
                             .padding(16.dp)
-                            .fillMaxSize()
-                            .onGloballyPositioned { coordinates ->
-                                containerSize = coordinates.size.toSize()
-                            }
                     ) {
                         Text(
-                            text = "무궁화 꽃이",
-                            fontSize = (containerSize.width * 7/100).toInt().sp,
-                            color = MaterialTheme.colorScheme.primary
+                            // 넷마블이나 카카오처럼 team 4.5 로고 띄우고 Start할까?
+                            text = "by team 4.5",
+                            color = MaterialTheme.colorScheme.secondary,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.fillMaxWidth()
                         )
-                        Text(
-                            text = "피었습니다!",
-                            fontSize = (containerSize.width * 7/100).toInt().sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Button(
-                            onClick = {nextScreen()},
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        ) {
-                            Text("다음 화면")
-                        }
                     }
+                }
+            ) { innerPadding ->
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                ) {
+                    Text(
+                        text = "무궁화 꽃이",
+                        fontSize = (screenWidth * 15/100).sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "피었습니다!",
+                        fontSize = (screenWidth * 15/100).sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun StartScreenPreview() {
+    SharonTheme {
+        Start.StartScreen(LocalConfiguration.current, nextScreen = {})
     }
 }

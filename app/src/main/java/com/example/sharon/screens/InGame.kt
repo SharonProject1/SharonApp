@@ -5,229 +5,133 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
+import com.example.sharon.ui.theme.Green
+import com.example.sharon.ui.theme.Yellow
+import com.example.sharon.ui.theme.Red
+import com.example.sharon.ui.theme.SharonTheme
 
+// 완성
 class InGame {
     companion object {
         @Composable
-        fun InGameScreen(nextScreen: () -> Unit) {
-            var containerSize by remember { mutableStateOf(Size.Zero) }
+        fun InGameScreen(configuration: Configuration, gameState: List<Int> = listOf(180, 10, 10), nextScreen: () -> Unit) {
+            val screenWidth: Int = configuration.screenWidthDp
+            val screenHeight: Int = configuration.screenHeightDp
 
-            val configuration = LocalConfiguration.current
-            val orientation = configuration.orientation
+            val timeLeft: Int = gameState[0]
+            val numberOfPlayers: Int = gameState[1]
+            val numberOfAlivePlayers: Int = gameState[2]
 
-            val timeLeft by remember { mutableStateOf(180) }
-            val numberOfPlayers by remember { mutableStateOf(10) }
-            val numberOfCurrentSurvivors by remember { mutableStateOf(numberOfPlayers) }
-
-            if(orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                Scaffold { innerPadding ->
-                    Box(
+            Scaffold { innerPadding ->
+                Box(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.background)
                             .fillMaxSize()
-                            .padding(innerPadding)
-                            .onGloballyPositioned { coordinates ->
-                                containerSize = coordinates.size.toSize()
-                            }
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(8.dp)
-                            ) {
-                                if(timeLeft > 90) {
-                                    Text(
-                                        text = "$timeLeft",
-                                        fontSize = (containerSize.height * 15/100).toInt().sp,
-                                        lineHeight = (containerSize.height * 20/100).toInt().sp,
-                                        color = Color(0xff00dd00)
-                                    )
-                                } else if(timeLeft in 31..90) {
-                                    Text(
-                                        text = "$timeLeft",
-                                        fontSize = (containerSize.height * 15/100).toInt().sp,
-                                        lineHeight = (containerSize.height * 20/100).toInt().sp,
-                                        color = Color(0xfff8d000)
-                                    )
-                                } else {
-                                    Text(
-                                        text = "$timeLeft",
-                                        fontSize = (containerSize.height * 15/100).toInt().sp,
-                                        lineHeight = (containerSize.height * 20/100).toInt().sp,
-                                        color = Color(0xfff00000)
-                                    )
-                                }
-                                Text(
-                                    text = "남은 시간(초)",
-                                    fontSize = (containerSize.height * 2/100).toInt().sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.width((containerSize.height * 5/100).toInt().dp))
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(8.dp)
-                            ) {
-                                if(numberOfCurrentSurvivors/numberOfPlayers.toFloat() > 2/3f) {
-                                    Text(
-                                        text = "$numberOfCurrentSurvivors/$numberOfPlayers",
-                                        fontSize = (containerSize.height * 8/100).toInt().sp,
-                                        lineHeight = (containerSize.height * 20/100).toInt().sp,
-                                        color = Color(0xff00dd00)
-                                    )
-                                } else if(numberOfCurrentSurvivors/numberOfPlayers.toFloat() <= 2/3f && numberOfCurrentSurvivors/numberOfPlayers.toFloat() > 1/3f) {
-                                    Text(
-                                        text = "$numberOfCurrentSurvivors/$numberOfPlayers",
-                                        fontSize = (containerSize.height * 8/100).toInt().sp,
-                                        lineHeight = (containerSize.height * 20/100).toInt().sp,
-                                        color = Color(0xfff8d000)
-                                    )
-                                } else {
-                                    Text(
-                                        text = "$numberOfCurrentSurvivors/$numberOfPlayers",
-                                        fontSize = (containerSize.height * 8/100).toInt().sp,
-                                        lineHeight = (containerSize.height * 20/100).toInt().sp,
-                                        color = Color(0xfff00000)
-                                    )
-                                }
-                                Text(
-                                    text = "현재 생존자(명)",
-                                    fontSize = (containerSize.height * 2/100).toInt().sp
-                                )
-                            }
-                            Button(
-                                onClick = {nextScreen()},
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                )
-                            ) {
-                                Text("다음 화면")
-                            }
-                        }
-                    }
-                }
-            } else {
-                Scaffold { innerPadding ->
-                    Box(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.background)
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                            .onGloballyPositioned { coordinates ->
-                                containerSize = coordinates.size.toSize()
-                            }
+                            .padding(8.dp)
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(8.dp)
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                if(timeLeft > 90) {
-                                    Text(
-                                        text = "$timeLeft",
-                                        fontSize = (containerSize.width * 15/100).toInt().sp,
-                                        color = Color(0xff00dd00)
-                                    )
-                                } else if(timeLeft in 31..90) {
-                                    Text(
-                                        text = "$timeLeft",
-                                        fontSize = (containerSize.width * 15/100).toInt().sp,
-                                        color = Color(0xfff8d000)
-                                    )
-                                } else {
-                                    Text(
-                                        text = "$timeLeft",
-                                        fontSize = (containerSize.width * 15/100).toInt().sp,
-                                        color = Color(0xfff00000)
-                                    )
-                                }
+                            if(timeLeft > 90) {
                                 Text(
-                                    text = "남은 시간(초)",
-                                    fontSize = (containerSize.width * 2/100).toInt().sp
+                                    text = "$timeLeft",
+                                    fontSize = (screenWidth * 25/100).sp,
+                                    color = Green
+                                )
+                            } else if(timeLeft in 31..90) {
+                                Text(
+                                    text = "$timeLeft",
+                                    fontSize = (screenWidth * 25/100).sp,
+                                    color = Yellow
+                                )
+                            } else {
+                                Text(
+                                    text = "$timeLeft",
+                                    fontSize = (screenWidth * 25/100).sp,
+                                    color = Red
                                 )
                             }
+                            Text(
+                                text = "남은 시간(초)",
+                                fontSize = (screenWidth * 7/100).sp
+                            )
+                        }
 
-                            Spacer(modifier = Modifier.height((containerSize.height * 5/100).toInt().dp))
+                        Spacer(modifier = Modifier.height((screenHeight * 10/100).dp))
 
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                if(numberOfCurrentSurvivors/numberOfPlayers.toFloat() > 2/3f) {
-                                    Text(
-                                        text = "$numberOfCurrentSurvivors/$numberOfPlayers",
-                                        fontSize = (containerSize.width * 8/100).toInt().sp,
-                                        color = Color(0xff00dd00)
-                                    )
-                                } else if(numberOfCurrentSurvivors/numberOfPlayers.toFloat() <= 2/3f && numberOfCurrentSurvivors/numberOfPlayers.toFloat() > 1/3f) {
-                                    Text(
-                                        text = "$numberOfCurrentSurvivors/$numberOfPlayers",
-                                        fontSize = (containerSize.width * 8/100).toInt().sp,
-                                        color = Color(0xfff8d000)
-                                    )
-                                } else {
-                                    Text(
-                                        text = "$numberOfCurrentSurvivors/$numberOfPlayers",
-                                        fontSize = (containerSize.width * 8/100).toInt().sp,
-                                        color = Color(0xfff00000)
-                                    )
-                                }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            if(numberOfAlivePlayers/numberOfPlayers.toFloat() > 2/3f) {
                                 Text(
-                                    text = "현재 생존자(명)",
-                                    fontSize = (containerSize.width * 2/100).toInt().sp
+                                    text = "$numberOfAlivePlayers/$numberOfPlayers",
+                                    fontSize = (screenWidth * 20/100).sp,
+                                    color = Green
+                                )
+                            } else if(numberOfAlivePlayers/numberOfPlayers.toFloat() <= 2/3f && numberOfAlivePlayers/numberOfPlayers.toFloat() > 1/3f) {
+                                Text(
+                                    text = "$numberOfAlivePlayers/$numberOfPlayers",
+                                    fontSize = (screenWidth * 20/100).sp,
+                                    color = Yellow
+                                )
+                            } else {
+                                Text(
+                                    text = "$numberOfAlivePlayers/$numberOfPlayers",
+                                    fontSize = (screenWidth * 20/100).sp,
+                                    color = Red
                                 )
                             }
-                            Button(
-                                onClick = {nextScreen()},
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                ),
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            ) {
-                                Text("다음 화면")
-                            }
+                            Text(
+                                text = "현재 생존자(명)",
+                                fontSize = (screenWidth * 7/100).sp
+                            )
+                        }
+                        Button(
+                            onClick = {nextScreen()},
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            Text("다음 화면")
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InGameScreenPreview() {
+    SharonTheme {
+        InGame.InGameScreen(LocalConfiguration.current, nextScreen = {})
     }
 }
