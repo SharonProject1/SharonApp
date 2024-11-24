@@ -40,6 +40,7 @@ class Home {
             val screenHeight = configuration.screenHeightDp
 
             var codeInput by remember { mutableStateOf(TextFieldValue("")) }
+            var idInput by remember { mutableStateOf(TextFieldValue("")) }
 
             Scaffold { innerPadding ->
                 Box(
@@ -69,7 +70,15 @@ class Home {
                         TextField(
                             value = codeInput,
                             onValueChange = { codeInput = it },
-                            placeholder = { Text(text = "코드 입력") },
+                            placeholder = { Text(text = "대기실 코드") },
+                            modifier = Modifier.fillMaxWidth(0.8f),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                        )
+                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
+                        TextField(
+                            value = idInput,
+                            onValueChange = { idInput = it },
+                            placeholder = { Text(text = "닉네임") },
                             modifier = Modifier.fillMaxWidth(0.8f),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
