@@ -11,8 +11,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.sharon.screens.Countdown
+import com.example.sharon.screens.Home
+import com.example.sharon.screens.InGame
+import com.example.sharon.screens.Result
+import com.example.sharon.screens.Start
+import com.example.sharon.screens.Termination
+import com.example.sharon.screens.WaitingRoom
 import com.example.sharon.ui.theme.SharonTheme
-import com.example.sharon.screens.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,8 +33,8 @@ class MainActivity : ComponentActivity() {
             SharonTheme {
 
                 var currentScreen by remember { mutableStateOf("StartScreen") }
-                // StartScreen - HomeScreen - WaitingRoomScreen - CountdownScreen - InGameScreen - TerminationScreen - ResultScreen
                 // Nav 기능으로 화면 전환하자
+
                 when (currentScreen) {
                     "StartScreen" -> Start.StartScreen(
                         configuration = configuration,

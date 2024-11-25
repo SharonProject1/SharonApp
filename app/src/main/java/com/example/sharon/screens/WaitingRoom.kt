@@ -2,13 +2,13 @@ package com.example.sharon.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -27,13 +27,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sharon.ui.theme.Green
 import com.example.sharon.ui.theme.Red
 import com.example.sharon.ui.theme.SharonTheme
+
+// 추후 삭제 요망
+val testData = listOf(
+    listOf("테스트용1", "999", "false", "true", "false"),
+    listOf("테스트용2", "999", "false", "true", "false"),
+    listOf("테스트용3", "999", "true", "true", "false"),
+    listOf("테스트용4", "999", "false", "true", "false"),
+    listOf("테스트용5", "999", "true", "true", "false"),
+    listOf("테스트용6", "999", "false", "true", "false"),
+    listOf("테스트용7", "999", "true", "true", "false"),
+    listOf("테스트용8", "999", "false", "true", "false"),
+    listOf("테스트용9", "999", "true", "true", "false")
+)
 
 class WaitingRoom {
     companion object {
@@ -42,100 +57,95 @@ class WaitingRoom {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
-            val playerData: List<List<String>>
+            val playerData: List<List<String>> = testData
 
-            val testData = listOf(
-                listOf("테스트용1", "999", "false", "true", "false"),
-                listOf("테스트용2", "999", "false", "true", "false"),
-                listOf("테스트용3", "999", "true", "true", "false"),
-                listOf("테스트용4", "999", "false", "true", "false"),
-                listOf("테스트용5", "999", "true", "true", "false"),
-                listOf("테스트용6", "999", "false", "true", "false"),
-                listOf("테스트용7", "999", "true", "true", "false"),
-                listOf("테스트용8", "999", "false", "true", "false"),
-                listOf("테스트용9", "999", "true", "true", "false")
-            )
-            playerData = testData
-
-            val numberOfPlayers  by remember { mutableStateOf(playerData.size) }
+            val numberOfPlayers by remember { mutableStateOf(playerData.size) }
 
             Scaffold { innerPadding ->
                 Box(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.background)
                         .fillMaxSize()
-                        .padding(innerPadding)
+                        .padding(innerPadding),
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp, 16.dp, 16.dp),
                         verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxSize()
                     ) {
+                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         Text(
                             text = "Test Room",
                             fontSize = (screenWidth * 10/100).sp
                         )
-                        Spacer(modifier = Modifier.weight(1f))
-                        Button(
-                            onClick = {nextScreen()},
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        ) {
-                            Text("준비 완료")
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
+
+                        val cellSize = screenWidth * 30/100
                         LazyVerticalGrid(
-                            horizontalArrangement = Arrangement.spacedBy((screenWidth * 1/100).dp),
-                            verticalArrangement = Arrangement.spacedBy((screenWidth * 1/100).dp),
-                            columns = GridCells.Adaptive(minSize = (screenWidth * 30/100).dp)
+                            horizontalArrangement = Arrangement.spacedBy((screenWidth * 2/100).dp, Alignment.CenterHorizontally),
+                            verticalArrangement = Arrangement.spacedBy((screenWidth * 2/100).dp, Alignment.CenterVertically),
+                            columns = GridCells.FixedSize(cellSize.dp),
+                            modifier = Modifier.weight(1f)
                         ) {
                             items(numberOfPlayers) { index ->
                                 PlayerBox(
-                                    width = (screenWidth * 30/100),
+                                    size = cellSize,
                                     index = index,
                                     screenWidth = screenWidth,
                                     playerData = playerData
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         PlayerBox(
-                            width = (screenWidth * 60/100),
+                            size = (screenHeight * 30/100),
                             index = 0,
                             screenWidth = screenWidth,
                             playerData = playerData
+                        )
+                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
+                        Button(
+                            onClick = { nextScreen() },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
                             )
-                        Spacer(modifier = Modifier.weight(1f))
+                        ) {
+                            Text("준비 완료")
+                        }
+                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                     }
                 }
             }
         }
     }
 }
+
 @Composable
-fun PlayerBox(width: Int, index: Int, screenWidth: Int, playerData: List<List<String>>) {
+fun PlayerBox(size: Int, index: Int, screenWidth: Int, playerData: List<List<String>>) {
+
+    var figureColor = Red
+
+    val isReady = playerData[index][2]
+    if(isReady == "true")
+        figureColor = Green
+
     Box(
         modifier = Modifier
-            .border(
-                width = (screenWidth * 1/100).dp,
-                color = Red,
-                shape = RoundedCornerShape((screenWidth * 3/100).dp)
-            )
-            .size(width.dp)
+            .clip(RoundedCornerShape((screenWidth * 5/100).dp))
+            .background(color = Color.DarkGray)
+            .size(size.dp)
             .aspectRatio(1f)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .padding(top = (screenWidth * 2/100).dp, bottom = (screenWidth * 2/100).dp)
+                .fillMaxSize()
         ) {
             Text(
                 text = playerData[index][0],
-                fontSize = (width/6).sp,
+                fontSize = (size/6).sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -150,22 +160,23 @@ fun PlayerBox(width: Int, index: Int, screenWidth: Int, playerData: List<List<St
                 ) {
                     Box(
                         modifier = Modifier
-                            .aspectRatio(1f)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.secondary)
+                            .background(figureColor)
                             .weight(1f)
+                            .aspectRatio(1f)
                             .fillMaxSize()
                     )
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape((width * 128/60).dp, (width * 128/60).dp))
-                            .background(MaterialTheme.colorScheme.secondary)
+                            .clip(RoundedCornerShape((size * 64/30).dp, (size * 64/30).dp))
+                            .background(figureColor)
                             .weight(2f)
+                            .aspectRatio(1f)
                             .fillMaxSize()
                     ) {
                         Text(
                             text = playerData[index][1],
-                            fontSize = (width/6).sp,
+                            fontSize = (size/6).sp,
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
