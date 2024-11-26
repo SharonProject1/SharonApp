@@ -2,12 +2,14 @@ package com.example.sharon.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,20 +17,29 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import com.example.sharon.ui.theme.Green
 import com.example.sharon.ui.theme.Red
 import com.example.sharon.ui.theme.SharonTheme
+import com.example.sharon.ui.theme.White
 
 // 추후 삭제 요망
 val testData = listOf(
@@ -57,6 +69,9 @@ class WaitingRoom {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
+            val focusManager = LocalFocusManager.current
+            val isButtonEnabled = remember { mutableStateOf(false) }
+
             val playerData: List<List<String>> = testData
 
             val numberOfPlayers by remember { mutableStateOf(playerData.size) }
@@ -65,6 +80,11 @@ class WaitingRoom {
                 Box(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.background)
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                focusManager.clearFocus()
+                            }
+                        }
                         .fillMaxSize()
                         .padding(innerPadding),
                 ) {
@@ -94,18 +114,21 @@ class WaitingRoom {
                                     screenWidth = screenWidth,
                                     playerData = playerData
                                 )
-                            }
+                                }
                         }
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         PlayerBox(
                             size = (screenHeight * 30/100),
                             index = 0,
+                            doesTextFieldExists = true,
+                            isButtonEnabled = isButtonEnabled,
                             screenWidth = screenWidth,
                             playerData = playerData
                         )
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         Button(
                             onClick = { nextScreen() },
+                            enabled = isButtonEnabled.value,
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -122,11 +145,11 @@ class WaitingRoom {
 }
 
 @Composable
-fun PlayerBox(size: Int, index: Int, screenWidth: Int, playerData: List<List<String>>) {
-
-    var figureColor = Red
+fun PlayerBox(size: Int, index: Int, doesTextFieldExists: Boolean = false, isButtonEnabled: MutableState<Boolean> = mutableStateOf(false), screenWidth: Int, playerData: List<List<String>>) {
+    var textState by remember { mutableStateOf("") }
 
     val isReady = playerData[index][2]
+    var figureColor = Red
     if(isReady == "true")
         figureColor = Green
 
@@ -174,11 +197,45 @@ fun PlayerBox(size: Int, index: Int, screenWidth: Int, playerData: List<List<Str
                             .aspectRatio(1f)
                             .fillMaxSize()
                     ) {
-                        Text(
-                            text = playerData[index][1],
-                            fontSize = (size/6).sp,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        if(doesTextFieldExists) {
+                            TextField(
+                                value = textState,
+                                onValueChange = {
+                                    if(it.all { it.isDigit() } && it.length <= 3)
+                                        textState = it
+                                        isButtonEnabled.value = true
+                                },
+                                placeholder = {
+                                    Text(
+                                        text = "번호 입력",
+                                        fontSize = (screenWidth * 5/100).sp,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = White,
+                                    unfocusedTextColor = Color.LightGray,
+                                    disabledTextColor = Color.Gray,
+                                    focusedContainerColor = Color(0x00000000),
+                                    unfocusedContainerColor = Color(0x00000000),
+                                    disabledContainerColor = Color(0x00000000),
+                                    focusedIndicatorColor = Color(0x00000000),
+                                    unfocusedIndicatorColor = Color(0x00000000),
+                                    disabledIndicatorColor = Color(0x00000000)
+                                ),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .fillMaxWidth()
+                            )
+                        } else {
+                            Text(
+                                text = playerData[index][1],
+                                fontSize = (size/6).sp,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
                     }
                 }
             }
