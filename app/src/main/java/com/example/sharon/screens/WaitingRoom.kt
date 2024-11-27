@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,15 +52,16 @@ import com.example.sharon.ui.theme.White
 
 // 추후 삭제 요망
 val testData = listOf(
-    listOf("테스트용1", "999", "false", "true", "false"),
-    listOf("테스트용2", "999", "false", "true", "false"),
-    listOf("테스트용3", "999", "true", "true", "false"),
-    listOf("테스트용4", "999", "false", "true", "false"),
-    listOf("테스트용5", "999", "true", "true", "false"),
-    listOf("테스트용6", "999", "false", "true", "false"),
-    listOf("테스트용7", "999", "true", "true", "false"),
-    listOf("테스트용8", "999", "false", "true", "false"),
-    listOf("테스트용9", "999", "true", "true", "false")
+    listOf("나 자신", "NaN", "true", "true", "false"),
+    listOf("테스트용1", "1", "false", "true", "false"),
+    listOf("테스트용2", "2", "false", "true", "false"),
+    listOf("테스트용3", "3", "true", "true", "false"),
+    listOf("테스트용4", "4", "false", "true", "false"),
+    listOf("테스트용5", "5", "true", "true", "false"),
+    listOf("테스트용6", "6", "false", "true", "false"),
+    listOf("테스트용7", "7", "true", "true", "false"),
+    listOf("테스트용8", "8", "false", "true", "false"),
+    listOf("테스트용9", "9", "true", "true", "false")
 )
 
 class WaitingRoom {
@@ -71,10 +73,11 @@ class WaitingRoom {
 
             val focusManager = LocalFocusManager.current
             val isButtonEnabled = remember { mutableStateOf(false) }
+            val isButtonOn = remember { mutableStateOf(false) }
 
             val playerData: List<List<String>> = testData
-
             val numberOfPlayers by remember { mutableStateOf(playerData.size) }
+            val myIndex: Int = 2// 내 index
 
             Scaffold { innerPadding ->
                 Box(
@@ -107,10 +110,10 @@ class WaitingRoom {
                             columns = GridCells.FixedSize(cellSize.dp),
                             modifier = Modifier.weight(1f)
                         ) {
-                            items(numberOfPlayers) { index ->
+                            items(numberOfPlayers-1) { index ->
                                 PlayerBox(
                                     size = cellSize,
-                                    index = index,
+                                    index = index+1,
                                     screenWidth = screenWidth,
                                     playerData = playerData
                                 )
@@ -122,16 +125,23 @@ class WaitingRoom {
                             index = 0,
                             doesTextFieldExists = true,
                             isButtonEnabled = isButtonEnabled,
+                            isButtonOn = isButtonOn,
                             screenWidth = screenWidth,
                             playerData = playerData
                         )
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         Button(
-                            onClick = { nextScreen() },
+                            onClick = {
+                                isButtonOn.value = !isButtonOn.value
+                                if(isButtonOn.value)
+                                    // GET /ready/:id
+                                else
+                                    // GET /notReady/:id
+                                nextScreen()
+                            },
                             enabled = isButtonEnabled.value,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                containerColor = if(isButtonOn.value) Color(0x5000FF00) else Color(0xA000FF00)
                             )
                         ) {
                             Text("준비 완료")
@@ -145,7 +155,14 @@ class WaitingRoom {
 }
 
 @Composable
-fun PlayerBox(size: Int, index: Int, doesTextFieldExists: Boolean = false, isButtonEnabled: MutableState<Boolean> = mutableStateOf(false), screenWidth: Int, playerData: List<List<String>>) {
+fun PlayerBox(
+    size: Int,
+    index: Int,
+    doesTextFieldExists: Boolean = false,
+    isButtonEnabled: MutableState<Boolean> = mutableStateOf(false),
+    isButtonOn: MutableState<Boolean> = mutableStateOf(false),
+    screenWidth: Int, playerData: List<List<String>>
+) {
     var textState by remember { mutableStateOf("") }
 
     val isReady = playerData[index][2]
@@ -200,17 +217,27 @@ fun PlayerBox(size: Int, index: Int, doesTextFieldExists: Boolean = false, isBut
                         if(doesTextFieldExists) {
                             TextField(
                                 value = textState,
+                                textStyle = TextStyle(
+                                    fontSize = (size/6).sp,
+                                    lineHeight = (size/4).sp,
+                                    color = White,
+                                    textAlign = TextAlign.Center
+                                ),
                                 onValueChange = {
-                                    if(it.all { it.isDigit() } && it.length <= 3)
+                                    if(it.all { it.isDigit() } && it.length <= 3) {
                                         textState = it
-                                        isButtonEnabled.value = true
+                                        isButtonEnabled.value = it.isNotEmpty()
+                                    }
                                 },
                                 placeholder = {
                                     Text(
                                         text = "번호 입력",
-                                        fontSize = (screenWidth * 5/100).sp,
+                                        fontSize = (size * 8/100).sp,
+                                        lineHeight = (size/4).sp,
                                         textAlign = TextAlign.Center,
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                            .fillMaxWidth()
                                     )
                                 },
                                 colors = TextFieldDefaults.colors(
@@ -222,9 +249,11 @@ fun PlayerBox(size: Int, index: Int, doesTextFieldExists: Boolean = false, isBut
                                     disabledContainerColor = Color(0x00000000),
                                     focusedIndicatorColor = Color(0x00000000),
                                     unfocusedIndicatorColor = Color(0x00000000),
-                                    disabledIndicatorColor = Color(0x00000000)
+                                    disabledIndicatorColor = Color(0x00000000),
+                                    cursorColor = White
                                 ),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                enabled = !isButtonOn.value,
                                 modifier = Modifier
                                     .align(Alignment.Center)
                                     .fillMaxWidth()
