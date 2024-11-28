@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Red
 import com.example.sharonapp.ui.theme.SharonAppTheme
@@ -69,10 +70,11 @@ val tempData = listOf(
     listOf("테스트용8", "8", "false", "true", "false"),
     listOf("테스트용9", "9", "true", "true", "false")
 )
+
 class WaitingRoom {
     companion object {
         @Composable
-        fun WaitingRoomScreen(idInput: String, configuration: Configuration, nextScreen: () -> Unit) {
+        fun WaitingRoomScreen(idInput: String, configuration: Configuration, navController: NavHostController) {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
@@ -87,12 +89,10 @@ class WaitingRoom {
             var checkResponse by remember { mutableStateOf<Checkconnection?>(null) }
 
             var pD by remember  { mutableStateOf(ServerResponse(data = listOf())) }
-            var playerData by remember { mutableStateOf(tempData) }
+            var playerData by remember { mutableStateOf(listOf<List<String>>()) }
             var numberOfPlayers by remember { mutableIntStateOf(1) }
             val playerNumber = remember { mutableIntStateOf(-1) }
 
-            pD.data = tempData
-            numberOfPlayers = pD.pCount
             LaunchedEffect(connection) {
                 if (connection) {
                     while (connection) {
@@ -198,7 +198,7 @@ class WaitingRoom {
                 if(isFirstLaunch.value) {
                     isFirstLaunch.value = false
                 } else {
-                    nextScreen()
+                    navController.navigate("countdown")
                 }
 
             }
@@ -233,10 +233,10 @@ fun PlayerBox(
     isButtonOn: MutableState<Boolean> = mutableStateOf(false),
     screenWidth: Int, playerData: List<List<String>>
 ) {
-//    if (playerData.isEmpty() || index >= playerData.size) {
-//        Text(text = "Loading...", fontSize = 16.sp) // 안전한 기본 UI
-//        return
-//    }
+    if (playerData.isEmpty() || index >= playerData.size) {
+        Text(text = "Loading...", fontSize = 16.sp) // 안전한 기본 UI
+        return
+    }
 
     var textState by remember { mutableStateOf("") }
     var figureColor = Red
@@ -349,11 +349,11 @@ fun PlayerBox(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun WaitingRoomScreenPreview() {
-    SharonAppTheme {
-        val idInput = "테스트"
-        WaitingRoom.WaitingRoomScreen(idInput, LocalConfiguration.current, nextScreen = {})
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun WaitingRoomScreenPreview() {
+//    SharonAppTheme {
+//        val idInput = "테스트"
+//        WaitingRoom.WaitingRoomScreen(idInput, LocalConfiguration.current, navController = navController)
+//    }
+//}

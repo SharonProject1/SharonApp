@@ -18,12 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.sharonapp.ui.theme.SharonAppTheme
 
 class Termination {
     companion object {
         @Composable
-        fun TerminationScreen(configuration: Configuration, nextScreen: () -> Unit) {
+        fun TerminationScreen(configuration: Configuration, navController: NavHostController) {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
@@ -43,7 +44,7 @@ class Termination {
                     ) {
                         Text("종료 화면(그냥 이거 팝업으로 띄우자)")
                         Button(
-                            onClick = {nextScreen()},
+                            onClick = { navController.navigate("result") },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -59,10 +60,10 @@ class Termination {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun TerminationScreenPreview() {
-    SharonAppTheme {
-        Termination.TerminationScreen(LocalConfiguration.current, nextScreen = {})
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun TerminationScreenPreview() {
+//    SharonAppTheme {
+//        Termination.TerminationScreen(LocalConfiguration.current, nextScreen = {})
+//    }
+//}

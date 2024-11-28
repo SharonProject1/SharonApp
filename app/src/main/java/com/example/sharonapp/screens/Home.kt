@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.sharonapp.ui.theme.SharonAppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,7 +43,7 @@ class Home {
     companion object {
 
         @Composable
-        fun HomeScreen(configuration: Configuration, nextScreen: () -> Unit): String {
+        fun HomeScreen(configuration: Configuration, navController: NavHostController): String {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
             var codeInput by remember { mutableStateOf("") }
@@ -100,11 +101,9 @@ class Home {
                                         withContext(Dispatchers.IO) {
                                             apiService2.submitNickname(idInput)
                                         }
-                                        nextScreen()
+                                        navController.navigate("waitingRoom")
                                     } catch (e: Exception) {
-                                        // 에러만 처리
                                         println("Error: ${e.message}")
-                                        nextScreen()
                                     }
                                 }
                                       },

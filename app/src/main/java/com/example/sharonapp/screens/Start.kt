@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.sharonapp.ui.theme.SharonAppTheme
 import kotlinx.coroutines.delay
 
@@ -28,13 +29,13 @@ import kotlinx.coroutines.delay
 class Start {
     companion object {
         @Composable
-        fun StartScreen(configuration: Configuration, nextScreen: () -> Unit) {
+        fun StartScreen(configuration: Configuration, navController: NavHostController) {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
             LaunchedEffect(Unit) {
-                delay(3000)
-                nextScreen()
+                delay(2000)
+                navController.navigate("home")
             }
 
             Scaffold(
@@ -79,10 +80,10 @@ class Start {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun StartScreenPreview() {
-    SharonAppTheme {
-        Start.StartScreen(LocalConfiguration.current, nextScreen = {})
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun StartScreenPreview() {
+//    SharonAppTheme {
+//        Start.StartScreen(LocalConfiguration.current, nextScreen = {})
+//    }
+//}
