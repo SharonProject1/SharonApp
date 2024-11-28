@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,16 +32,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sharon.ui.theme.SharonTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+
 
 class Home {
     companion object {
+
         @Composable
-        fun HomeScreen(configuration: Configuration, nextScreen: () -> Unit) {
+        fun HomeScreen(configuration: Configuration, nextScreen: () -> Unit): String {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
+            var codeInput by remember { mutableStateOf("") }
 
-            var codeInput by remember { mutableStateOf(TextFieldValue("")) }
-            var idInput by remember { mutableStateOf(TextFieldValue("")) }
+            val coroutineScope = rememberCoroutineScope()
+            val apiService2 = remember { SecondApiService() }
+            var idInput by remember { mutableStateOf("") }
+
 
             Scaffold { innerPadding ->
                 Box(
@@ -84,7 +94,21 @@ class Home {
                         )
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         Button(
-                            onClick = { nextScreen() },
+                            onClick = {
+                                coroutineScope.launch {
+                                    try{
+                                        withContext(Dispatchers.IO) {
+                                            apiService2.submitNickname(idInput)
+                                        }
+                                        nextScreen()
+                                    } catch (e: Exception) {
+                                        // 에러만 처리
+                                        println("Error: ${e.message}")
+                                        nextScreen()
+                                    }
+                                }
+                                      },
+
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -96,14 +120,15 @@ class Home {
                     }
                 }
             }
+            return idInput
         }
     }
 }
-
+/*
 @Preview(showBackground = true)
-@Composable
+Composable
 fun HomeScreenPreview() {
     SharonTheme {
         Home.HomeScreen(LocalConfiguration.current, nextScreen = {})
     }
-}
+}*/

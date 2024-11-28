@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         setContent {
+            var idInput by remember { mutableStateOf("") }
 
             val configuration = LocalConfiguration.current
 
@@ -42,16 +43,18 @@ class MainActivity : ComponentActivity() {
                             currentScreen = "HomeScreen"
                         }
                     )
-                    "HomeScreen" -> Home.HomeScreen(
+                    "HomeScreen" -> idInput = Home.HomeScreen(
                         configuration = configuration,
                         nextScreen = {
                             currentScreen = "WaitingRoomScreen"
                         }
                     )
                     "WaitingRoomScreen" -> WaitingRoom.WaitingRoomScreen(
+idInput,
                         configuration = configuration,
                         nextScreen = {
                             currentScreen = "CountdownScreen"
+
                         }
                     )
                     "CountdownScreen" -> Countdown.CountdownScreen(
@@ -88,11 +91,13 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SharonPreview(){
     val configuration = LocalConfiguration.current
+    var idInput by remember { mutableStateOf("") }
 
     SharonTheme {
+
         var currentScreen by remember { mutableStateOf("StartScreen") }
-        // StartScreen - HomeScreen - WaitingRoomScreen - CountdownScreen - InGameScreen - TerminationScreen - ResultScreen
         // Nav 기능으로 화면 전환하자
+
         when (currentScreen) {
             "StartScreen" -> Start.StartScreen(
                 configuration = configuration,
@@ -100,16 +105,18 @@ fun SharonPreview(){
                     currentScreen = "HomeScreen"
                 }
             )
-            "HomeScreen" -> Home.HomeScreen(
+            "HomeScreen" -> idInput = Home.HomeScreen(
                 configuration = configuration,
                 nextScreen = {
                     currentScreen = "WaitingRoomScreen"
                 }
             )
             "WaitingRoomScreen" -> WaitingRoom.WaitingRoomScreen(
+                idInput,
                 configuration = configuration,
                 nextScreen = {
                     currentScreen = "CountdownScreen"
+
                 }
             )
             "CountdownScreen" -> Countdown.CountdownScreen(
@@ -137,5 +144,4 @@ fun SharonPreview(){
                 }
             )
         }
-    }
-}
+    }}

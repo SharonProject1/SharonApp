@@ -27,9 +27,13 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,8 +53,10 @@ import com.example.sharon.ui.theme.Green
 import com.example.sharon.ui.theme.Red
 import com.example.sharon.ui.theme.SharonTheme
 import com.example.sharon.ui.theme.White
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
-// 추후 삭제 요망
 val testData = listOf(
     listOf("나 자신", "NaN", "true", "true", "false"),
     listOf("테스트용1", "1", "false", "true", "false"),
@@ -63,11 +69,10 @@ val testData = listOf(
     listOf("테스트용8", "8", "false", "true", "false"),
     listOf("테스트용9", "9", "true", "true", "false")
 )
-
 class WaitingRoom {
     companion object {
         @Composable
-        fun WaitingRoomScreen(configuration: Configuration, nextScreen: () -> Unit) {
+        fun WaitingRoomScreen(idInput: String, configuration: Configuration, nextScreen: () -> Unit) {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
@@ -75,9 +80,47 @@ class WaitingRoom {
             val isButtonEnabled = remember { mutableStateOf(false) }
             val isButtonOn = remember { mutableStateOf(false) }
 
-            val playerData: List<List<String>> = testData
-            val numberOfPlayers by remember { mutableStateOf(playerData.size) }
-            val myIndex: Int = 2// 내 index
+
+            var startSignal by remember { mutableStateOf(false) }
+            var connection by rememberSaveable { mutableStateOf(true) }
+            val apiService = remember { createApiService() }
+            val apiService2 = remember { SecondApiService() }
+            var checkResponse by remember { mutableStateOf<Checkconnection?>(null) } // 상태로 관찰 가능하게 설정
+            var pD by remember  { mutableStateOf(ServerResponse(data = listOf())) }
+            var numberOfPlayers by remember { mutableIntStateOf(1) }
+            var playerData by remember  { mutableStateOf(listOf<List<String>>()) }
+            pD.data = testData
+            numberOfPlayers = pD.pCount
+            LaunchedEffect(connection) {
+                if (connection) {
+                    while (connection) {
+                        try {
+                            withContext(Dispatchers.IO) {
+                                val response = apiService.connectionCheck(idInput)
+                                val signal = apiService2.isRunning()
+                                checkResponse = response
+                                startSignal = signal
+                            }
+                        } catch (e: Exception) {
+                            connection = false
+                        }
+                        delay(750)
+                    }
+                }
+            }
+                LaunchedEffect(checkResponse?.NeedToUpdate) {
+                    try {
+                        pD = withContext(Dispatchers.IO) {
+                            apiService.getPlayerData(idInput)
+                        }
+                        playerData = pD.data
+                        numberOfPlayers = pD.pCount
+
+                    } catch (e: Exception) {
+                        playerData = testData
+                        numberOfPlayers = testData.size
+                    }
+                }
 
             Scaffold { innerPadding ->
                 Box(
@@ -121,7 +164,7 @@ class WaitingRoom {
                         }
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         PlayerBox(
-                            size = (screenHeight * 30/100),
+                            size = (screenHeight * 30 / 100),
                             index = 0,
                             doesTextFieldExists = true,
                             isButtonEnabled = isButtonEnabled,
@@ -131,13 +174,9 @@ class WaitingRoom {
                         )
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         Button(
-                            onClick = {
+                            onClick =
+                            {
                                 isButtonOn.value = !isButtonOn.value
-                                if(isButtonOn.value)
-                                    // GET /ready/:id
-                                else
-                                    // GET /notReady/:id
-                                nextScreen()
                             },
                             enabled = isButtonEnabled.value,
                             colors = ButtonDefaults.buttonColors(
@@ -149,6 +188,19 @@ class WaitingRoom {
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                     }
                 }
+            }
+
+            val isFirstLaunch = remember { mutableStateOf(true) }
+            LaunchedEffect(startSignal) {
+                if(isFirstLaunch.value)
+                {
+                    isFirstLaunch.value = false
+                }
+                else
+                {
+                    nextScreen()
+                }
+
             }
         }
     }
@@ -163,16 +215,21 @@ fun PlayerBox(
     isButtonOn: MutableState<Boolean> = mutableStateOf(false),
     screenWidth: Int, playerData: List<List<String>>
 ) {
+    if (playerData.isEmpty() || index >= playerData.size) {
+        Text(text = "Loading...", fontSize = 16.sp) // 안전한 기본 UI
+        return
+    }
     var textState by remember { mutableStateOf("") }
-
-    val isReady = playerData[index][2]
     var figureColor = Red
-    if(isReady == "true")
+    val isReady = playerData[index][2]
+    val apiService = remember { createApiService() }
+    val apiService2 = remember { SecondApiService() }
+    if (isReady == "true")
         figureColor = Green
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape((screenWidth * 5/100).dp))
+            .clip(RoundedCornerShape((screenWidth * 5 / 100).dp))
             .background(color = Color.DarkGray)
             .size(size.dp)
             .aspectRatio(1f)
@@ -180,12 +237,12 @@ fun PlayerBox(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .padding(top = (screenWidth * 2/100).dp, bottom = (screenWidth * 2/100).dp)
+                .padding(top = (screenWidth * 2 / 100).dp, bottom = (screenWidth * 2 / 100).dp)
                 .fillMaxSize()
         ) {
             Text(
                 text = playerData[index][0],
-                fontSize = (size/6).sp,
+                fontSize = (size / 6).sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -208,23 +265,23 @@ fun PlayerBox(
                     )
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape((size * 64/30).dp, (size * 64/30).dp))
+                            .clip(RoundedCornerShape((size * 64 / 30).dp, (size * 64 / 30).dp))
                             .background(figureColor)
                             .weight(2f)
                             .aspectRatio(1f)
                             .fillMaxSize()
                     ) {
-                        if(doesTextFieldExists) {
+                        if (doesTextFieldExists) {
                             TextField(
                                 value = textState,
                                 textStyle = TextStyle(
-                                    fontSize = (size/6).sp,
-                                    lineHeight = (size/4).sp,
+                                    fontSize = (size / 6).sp,
+                                    lineHeight = (size / 4).sp,
                                     color = White,
                                     textAlign = TextAlign.Center
                                 ),
                                 onValueChange = {
-                                    if(it.all { it.isDigit() } && it.length <= 3) {
+                                    if (it.all { it.isDigit() } && it.length <= 3) {
                                         textState = it
                                         isButtonEnabled.value = it.isNotEmpty()
                                     }
@@ -232,8 +289,8 @@ fun PlayerBox(
                                 placeholder = {
                                     Text(
                                         text = "번호 입력",
-                                        fontSize = (size * 8/100).sp,
-                                        lineHeight = (size/4).sp,
+                                        fontSize = (size * 8 / 100).sp,
+                                        lineHeight = (size / 4).sp,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .align(Alignment.Center)
@@ -261,7 +318,7 @@ fun PlayerBox(
                         } else {
                             Text(
                                 text = playerData[index][1],
-                                fontSize = (size/6).sp,
+                                fontSize = (size / 6).sp,
                                 modifier = Modifier.align(Alignment.Center)
                             )
                         }
@@ -269,13 +326,31 @@ fun PlayerBox(
                 }
             }
         }
+        LaunchedEffect(isButtonOn.value) {
+            if (isButtonOn.value) {
+                withContext(Dispatchers.IO)
+                {
+                    apiService2.sendReady(playerData[0][0])
+                    apiService.getInputNumber(
+                        nickname = playerData[0][0],
+                        number = textState.toInt()
+                    )
+                }
+            } else {
+                withContext(Dispatchers.IO)
+                {
+                    apiService2.sendNotReady(playerData[0][0])
+                }
+            }
+        }
     }
 }
-
+/*
 @Preview(showBackground = true)
 @Composable
 fun WaitingRoomScreenPreview() {
     SharonTheme {
-        WaitingRoom.WaitingRoomScreen(LocalConfiguration.current, nextScreen = {})
+        val idInput = ""
+        WaitingRoom.WaitingRoomScreen(idInput, LocalConfiguration.current, nextScreen = {})
     }
-}
+}*/
