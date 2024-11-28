@@ -84,56 +84,6 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
-
-//                var currentScreen by remember { mutableStateOf("StartScreen") }
-//                // Nav 기능으로 화면 전환하자
-//
-//                when (currentScreen) {
-//                    "StartScreen" -> Start.StartScreen(
-//                        configuration = configuration,
-//                        nextScreen = {
-//                            currentScreen = "HomeScreen"
-//                        }
-//                    )
-//                    "HomeScreen" -> idInput = Home.HomeScreen(
-//                        configuration = configuration,
-//                        nextScreen = {
-//                            currentScreen = "WaitingRoomScreen"
-//                        }
-//                    )
-//                    "WaitingRoomScreen" -> WaitingRoom.WaitingRoomScreen(
-//                        idInput,
-//                        configuration = configuration,
-//                        nextScreen = {
-//                            currentScreen = "CountdownScreen"
-//
-//                        }
-//                    )
-//                    "CountdownScreen" -> Countdown.CountdownScreen(
-//                        configuration = configuration,
-//                        nextScreen = {
-//                            currentScreen = "InGameScreen"
-//                        }
-//                    )
-//                    "InGameScreen" -> InGame.InGameScreen(
-//                        configuration = configuration,
-//                        nextScreen = {
-//                            currentScreen = "TerminationScreen"
-//                        }
-//                    )
-//                    "TerminationScreen" -> Termination.TerminationScreen(
-//                        configuration = configuration,
-//                        nextScreen = {
-//                            currentScreen = "ResultScreen"
-//                        }
-//                    )
-//                    "ResultScreen" -> Result.ResultScreen(
-//                        configuration = configuration,
-//                        nextScreen = {
-//                            currentScreen = "StartScreen"
-//                        }
-//                    )
-//                }
             }
         }
     }

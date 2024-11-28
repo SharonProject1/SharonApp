@@ -1,4 +1,4 @@
-package com.example.sharonapp.screens
+package com.example.sharonapp.utility
 
 // 필요한 import 추가
 
