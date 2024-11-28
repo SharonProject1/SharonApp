@@ -51,7 +51,7 @@ interface ApiService {
 private object RetrofitHolder {
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("http://sharonproject.ddns.net:5522") // 베이스 URL
+            .baseUrl("http://sharonproject.ddns.net:5522/") // 베이스 URL
             .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create())) // JSON 파싱용
             .build()
     }
@@ -65,7 +65,7 @@ fun createApiService(): ApiService {
 }
 fun SecondApiService(): ApiService {
     return Retrofit.Builder()
-        .baseUrl("http://sharonproject.ddns.net:5522")
+        .baseUrl("http://sharonproject.ddns.net:5522/")
         .addConverterFactory(ScalarsConverterFactory.create()) // 단순 문자열 처리용
         .build()
         .create(ApiService::class.java)

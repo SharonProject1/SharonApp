@@ -57,8 +57,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-val testData = listOf(
-    listOf("나 자신", "NaN", "true", "true", "false"),
+val tempData = listOf(
+    listOf("나 자신", "NaN", "false", "true", "false"),
     listOf("테스트용1", "1", "false", "true", "false"),
     listOf("테스트용2", "2", "false", "true", "false"),
     listOf("테스트용3", "3", "true", "true", "false"),
@@ -80,16 +80,18 @@ class WaitingRoom {
             val isButtonEnabled = remember { mutableStateOf(false) }
             val isButtonOn = remember { mutableStateOf(false) }
 
-
             var startSignal by remember { mutableStateOf(false) }
             var connection by rememberSaveable { mutableStateOf(true) }
             val apiService = remember { createApiService() }
             val apiService2 = remember { SecondApiService() }
-            var checkResponse by remember { mutableStateOf<Checkconnection?>(null) } // 상태로 관찰 가능하게 설정
+            var checkResponse by remember { mutableStateOf<Checkconnection?>(null) }
+
             var pD by remember  { mutableStateOf(ServerResponse(data = listOf())) }
+            var playerData by remember { mutableStateOf(tempData) }
             var numberOfPlayers by remember { mutableIntStateOf(1) }
-            var playerData by remember  { mutableStateOf(listOf<List<String>>()) }
-            pD.data = testData
+            val playerNumber = remember { mutableIntStateOf(-1) }
+
+            pD.data = tempData
             numberOfPlayers = pD.pCount
             LaunchedEffect(connection) {
                 if (connection) {
@@ -116,8 +118,8 @@ class WaitingRoom {
                         playerData = pD.data
                         numberOfPlayers = pD.pCount
                     } catch (e: Exception) {
-                        playerData = testData
-                        numberOfPlayers = testData.size
+                        playerData = tempData
+                        numberOfPlayers = tempData.size
                     }
                 }
 
@@ -159,13 +161,14 @@ class WaitingRoom {
                                     screenWidth = screenWidth,
                                     playerData = playerData
                                 )
-                                }
+                            }
                         }
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         PlayerBox(
                             size = (screenHeight * 30 / 100),
                             index = 0,
                             doesTextFieldExists = true,
+                            playerNumber = playerNumber,
                             isButtonEnabled = isButtonEnabled,
                             isButtonOn = isButtonOn,
                             screenWidth = screenWidth,
@@ -175,6 +178,7 @@ class WaitingRoom {
                         Button(
                             onClick =
                             {
+                                // GET /inputNumber/:id?number=123
                                 isButtonOn.value = !isButtonOn.value
                             },
                             enabled = isButtonEnabled.value,
@@ -191,15 +195,29 @@ class WaitingRoom {
 
             val isFirstLaunch = remember { mutableStateOf(true) }
             LaunchedEffect(startSignal) {
-                if(isFirstLaunch.value)
-                {
+                if(isFirstLaunch.value) {
                     isFirstLaunch.value = false
-                }
-                else
-                {
+                } else {
                     nextScreen()
                 }
 
+            }
+            LaunchedEffect(isButtonOn.value) {
+                if (isButtonOn.value) {
+                    withContext(Dispatchers.IO)
+                    {
+                        apiService2.sendReady(playerData[0][0])
+                        apiService.getInputNumber(
+                            nickname = playerData[0][0],
+                            number = playerNumber.intValue
+                        )
+                    }
+                } else {
+                    withContext(Dispatchers.IO)
+                    {
+                        apiService2.sendNotReady(playerData[0][0])
+                    }
+                }
             }
         }
     }
@@ -210,19 +228,19 @@ fun PlayerBox(
     size: Int,
     index: Int,
     doesTextFieldExists: Boolean = false,
+    playerNumber: MutableState<Int> = mutableIntStateOf(-1),
     isButtonEnabled: MutableState<Boolean> = mutableStateOf(false),
     isButtonOn: MutableState<Boolean> = mutableStateOf(false),
     screenWidth: Int, playerData: List<List<String>>
 ) {
-    if (playerData.isEmpty() || index >= playerData.size) {
-        Text(text = "Loading...", fontSize = 16.sp) // 안전한 기본 UI
-        return
-    }
+//    if (playerData.isEmpty() || index >= playerData.size) {
+//        Text(text = "Loading...", fontSize = 16.sp) // 안전한 기본 UI
+//        return
+//    }
+
     var textState by remember { mutableStateOf("") }
     var figureColor = Red
     val isReady = playerData[index][2]
-    val apiService = remember { createApiService() }
-    val apiService2 = remember { SecondApiService() }
     if (isReady == "true")
         figureColor = Green
 
@@ -280,9 +298,12 @@ fun PlayerBox(
                                     textAlign = TextAlign.Center
                                 ),
                                 onValueChange = {
+                                    val isDupilcated = playerData.drop(1).any { player -> it == player[1]}
+
                                     if (it.all { it.isDigit() } && it.length <= 3) {
                                         textState = it
-                                        isButtonEnabled.value = it.isNotEmpty()
+                                        playerNumber.value = textState.toInt()
+                                        isButtonEnabled.value = it.isNotEmpty() && !isDupilcated
                                     }
                                 },
                                 placeholder = {
@@ -325,31 +346,14 @@ fun PlayerBox(
                 }
             }
         }
-        LaunchedEffect(isButtonOn.value) {
-            if (isButtonOn.value) {
-                withContext(Dispatchers.IO)
-                {
-                    apiService2.sendReady(playerData[0][0])
-                    apiService.getInputNumber(
-                        nickname = playerData[0][0],
-                        number = textState.toInt()
-                    )
-                }
-            } else {
-                withContext(Dispatchers.IO)
-                {
-                    apiService2.sendNotReady(playerData[0][0])
-                }
-            }
-        }
     }
 }
-/*
+
 @Preview(showBackground = true)
 @Composable
 fun WaitingRoomScreenPreview() {
-    SharonTheme {
-        val idInput = ""
+    SharonAppTheme {
+        val idInput = "테스트"
         WaitingRoom.WaitingRoomScreen(idInput, LocalConfiguration.current, nextScreen = {})
     }
-}*/
+}
