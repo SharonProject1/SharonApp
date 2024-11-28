@@ -115,7 +115,6 @@ class WaitingRoom {
                         }
                         playerData = pD.data
                         numberOfPlayers = pD.pCount
-
                     } catch (e: Exception) {
                         playerData = testData
                         numberOfPlayers = testData.size

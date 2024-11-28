@@ -47,10 +47,10 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     // Retrofit & GSON 라이브러리
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation(libs.retrofit)
     implementation(libs.converter.gson)
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+    implementation(libs.gson)
+    implementation(libs.converter.scalars)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

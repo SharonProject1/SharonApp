@@ -18,7 +18,7 @@ data class Checkconnection(val connect: Boolean, val NeedToUpdate: Boolean)
 // 1. JSON 구조에 맞는 데이터 클래스 정의
 @Parcelize
 data class ServerResponse(
-    @SerializedName("data") var data: List<List<String>> // 2차원 배열에 다양한 자료형 포함
+    @SerializedName("data") var data: List<List<String>>
 ) : Parcelable {
     var pCount = 1
         get() = data.size
