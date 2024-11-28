@@ -46,7 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.example.sharonapp.WaitingRoom
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Red
 import com.example.sharonapp.ui.theme.White
@@ -58,23 +58,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-val tempData = listOf(
-    listOf("나 자신", "NaN", "false", "true", "false"),
-    listOf("테스트용1", "1", "false", "true", "false"),
-    listOf("테스트용2", "2", "false", "true", "false"),
-    listOf("테스트용3", "3", "true", "true", "false"),
-    listOf("테스트용4", "4", "false", "true", "false"),
-    listOf("테스트용5", "5", "true", "true", "false"),
-    listOf("테스트용6", "6", "false", "true", "false"),
-    listOf("테스트용7", "7", "true", "true", "false"),
-    listOf("테스트용8", "8", "false", "true", "false"),
-    listOf("테스트용9", "9", "true", "true", "false")
-)
-
-class WaitingRoom {
+class WaitingRoomClass {
     companion object {
         @Composable
-        fun WaitingRoomScreen(idInput: String, configuration: Configuration, navController: NavHostController) {
+        fun WaitingRoomScreen(
+            waitingRoom: WaitingRoom,
+            configuration: Configuration,
+            onNavigateToCountdown: () -> Unit
+        ) {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
@@ -98,7 +89,7 @@ class WaitingRoom {
                     while (connection) {
                         try {
                             withContext(Dispatchers.IO) {
-                                val response = apiService.connectionCheck(idInput)
+                                val response = apiService.connectionCheck(waitingRoom.userId)
                                 val signal = apiService2.isRunning()
                                 checkResponse = response
                                 startSignal = signal
@@ -113,11 +104,23 @@ class WaitingRoom {
                 LaunchedEffect(checkResponse?.NeedToUpdate) {
                     try {
                         pD = withContext(Dispatchers.IO) {
-                            apiService.getPlayerData(idInput)
+                            apiService.getPlayerData(waitingRoom.userId)
                         }
                         playerData = pD.data
                         numberOfPlayers = pD.pCount
                     } catch (e: Exception) {
+                        val tempData = listOf(
+                            listOf("나 자신", "NaN", "false", "true", "false"),
+                            listOf("테스트용1", "1", "false", "true", "false"),
+                            listOf("테스트용2", "2", "false", "true", "false"),
+                            listOf("테스트용3", "3", "true", "true", "false"),
+                            listOf("테스트용4", "4", "false", "true", "false"),
+                            listOf("테스트용5", "5", "true", "true", "false"),
+                            listOf("테스트용6", "6", "false", "true", "false"),
+                            listOf("테스트용7", "7", "true", "true", "false"),
+                            listOf("테스트용8", "8", "false", "true", "false"),
+                            listOf("테스트용9", "9", "true", "true", "false")
+                        )
                         playerData = tempData
                         numberOfPlayers = tempData.size
                     }
@@ -198,7 +201,7 @@ class WaitingRoom {
                 if(isFirstLaunch.value) {
                     isFirstLaunch.value = false
                 } else {
-                    navController.navigate("countdown")
+                    onNavigateToCountdown()
                 }
 
             }
@@ -220,127 +223,127 @@ class WaitingRoom {
                 }
             }
         }
-    }
-}
 
-@Composable
-fun PlayerBox(
-    size: Int,
-    index: Int,
-    doesTextFieldExists: Boolean = false,
-    playerNumber: MutableState<Int> = mutableIntStateOf(-1),
-    isButtonEnabled: MutableState<Boolean> = mutableStateOf(false),
-    isButtonOn: MutableState<Boolean> = mutableStateOf(false),
-    screenWidth: Int, playerData: List<List<String>>
-) {
-    if (playerData.isEmpty() || index >= playerData.size) {
-        Text(text = "Loading...", fontSize = 16.sp) // 안전한 기본 UI
-        return
-    }
-
-    var textState by remember { mutableStateOf("") }
-    var figureColor = Red
-    val isReady = playerData[index][2]
-    if (isReady == "true")
-        figureColor = Green
-
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape((screenWidth * 5 / 100).dp))
-            .background(color = Color.DarkGray)
-            .size(size.dp)
-            .aspectRatio(1f)
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(top = (screenWidth * 2 / 100).dp, bottom = (screenWidth * 2 / 100).dp)
-                .fillMaxSize()
+        @Composable
+        fun PlayerBox(
+            size: Int,
+            index: Int,
+            doesTextFieldExists: Boolean = false,
+            playerNumber: MutableState<Int> = mutableIntStateOf(-1),
+            isButtonEnabled: MutableState<Boolean> = mutableStateOf(false),
+            isButtonOn: MutableState<Boolean> = mutableStateOf(false),
+            screenWidth: Int, playerData: List<List<String>>
         ) {
-            Text(
-                text = playerData[index][0],
-                fontSize = (size / 6).sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            if (playerData.isEmpty() || index >= playerData.size) {
+                Text(text = "Loading...", fontSize = 16.sp) // 안전한 기본 UI
+                return
+            }
+
+            var textState by remember { mutableStateOf("") }
+            var figureColor = Red
+            val isReady = playerData[index][2]
+            if (isReady == "true")
+                figureColor = Green
+
             Box(
                 modifier = Modifier
+                    .clip(RoundedCornerShape((screenWidth * 5 / 100).dp))
+                    .background(color = Color.DarkGray)
+                    .size(size.dp)
                     .aspectRatio(1f)
-                    .weight(1f)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .padding(top = (screenWidth * 2 / 100).dp, bottom = (screenWidth * 2 / 100).dp)
+                        .fillMaxSize()
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(figureColor)
-                            .weight(1f)
-                            .aspectRatio(1f)
-                            .fillMaxSize()
+                    Text(
+                        text = playerData[index][0],
+                        fontSize = (size / 6).sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape((size * 64 / 30).dp, (size * 64 / 30).dp))
-                            .background(figureColor)
-                            .weight(2f)
                             .aspectRatio(1f)
-                            .fillMaxSize()
+                            .weight(1f)
                     ) {
-                        if (doesTextFieldExists) {
-                            TextField(
-                                value = textState,
-                                textStyle = TextStyle(
-                                    fontSize = (size / 6).sp,
-                                    lineHeight = (size / 4).sp,
-                                    color = White,
-                                    textAlign = TextAlign.Center
-                                ),
-                                onValueChange = {
-                                    val isDupilcated = playerData.drop(1).any { player -> it == player[1]}
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(figureColor)
+                                    .weight(1f)
+                                    .aspectRatio(1f)
+                                    .fillMaxSize()
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape((size * 64 / 30).dp, (size * 64 / 30).dp))
+                                    .background(figureColor)
+                                    .weight(2f)
+                                    .aspectRatio(1f)
+                                    .fillMaxSize()
+                            ) {
+                                if (doesTextFieldExists) {
+                                    TextField(
+                                        value = textState,
+                                        textStyle = TextStyle(
+                                            fontSize = (size / 6).sp,
+                                            lineHeight = (size / 4).sp,
+                                            color = White,
+                                            textAlign = TextAlign.Center
+                                        ),
+                                        onValueChange = {
+                                            val isDupilcated = playerData.drop(1).any { player -> it == player[1]}
 
-                                    if (it.all { it.isDigit() } && it.length <= 3) {
-                                        textState = it
-                                        playerNumber.value = textState.toInt()
-                                        isButtonEnabled.value = it.isNotEmpty() && !isDupilcated
-                                    }
-                                },
-                                placeholder = {
-                                    Text(
-                                        text = "번호 입력",
-                                        fontSize = (size * 8 / 100).sp,
-                                        lineHeight = (size / 4).sp,
-                                        textAlign = TextAlign.Center,
+                                            if (it.all { it.isDigit() } && it.length <= 3) {
+                                                textState = it
+                                                playerNumber.value = textState.toInt()
+                                                isButtonEnabled.value = it.isNotEmpty() && !isDupilcated
+                                            }
+                                        },
+                                        placeholder = {
+                                            Text(
+                                                text = "번호 입력",
+                                                fontSize = (size * 8 / 100).sp,
+                                                lineHeight = (size / 4).sp,
+                                                textAlign = TextAlign.Center,
+                                                modifier = Modifier
+                                                    .align(Alignment.Center)
+                                                    .fillMaxWidth()
+                                            )
+                                        },
+                                        colors = TextFieldDefaults.colors(
+                                            focusedTextColor = White,
+                                            unfocusedTextColor = Color.LightGray,
+                                            disabledTextColor = Color.Gray,
+                                            focusedContainerColor = Color(0x00000000),
+                                            unfocusedContainerColor = Color(0x00000000),
+                                            disabledContainerColor = Color(0x00000000),
+                                            focusedIndicatorColor = Color(0x00000000),
+                                            unfocusedIndicatorColor = Color(0x00000000),
+                                            disabledIndicatorColor = Color(0x00000000),
+                                            cursorColor = White
+                                        ),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        enabled = !isButtonOn.value,
                                         modifier = Modifier
                                             .align(Alignment.Center)
                                             .fillMaxWidth()
                                     )
-                                },
-                                colors = TextFieldDefaults.colors(
-                                    focusedTextColor = White,
-                                    unfocusedTextColor = Color.LightGray,
-                                    disabledTextColor = Color.Gray,
-                                    focusedContainerColor = Color(0x00000000),
-                                    unfocusedContainerColor = Color(0x00000000),
-                                    disabledContainerColor = Color(0x00000000),
-                                    focusedIndicatorColor = Color(0x00000000),
-                                    unfocusedIndicatorColor = Color(0x00000000),
-                                    disabledIndicatorColor = Color(0x00000000),
-                                    cursorColor = White
-                                ),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                enabled = !isButtonOn.value,
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .fillMaxWidth()
-                            )
-                        } else {
-                            Text(
-                                text = playerData[index][1],
-                                fontSize = (size / 6).sp,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
+                                } else {
+                                    Text(
+                                        text = playerData[index][1],
+                                        fontSize = (size / 6).sp,
+                                        modifier = Modifier.align(Alignment.Center)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -353,7 +356,7 @@ fun PlayerBox(
 //@Composable
 //fun WaitingRoomScreenPreview() {
 //    SharonAppTheme {
-//        val idInput = "테스트"
-//        WaitingRoom.WaitingRoomScreen(idInput, LocalConfiguration.current, navController = navController)
+//        val userId = "테스트"
+//        WaitingRoom.WaitingRoomScreen(userId, LocalConfiguration.current, navController = navController)
 //    }
 //}

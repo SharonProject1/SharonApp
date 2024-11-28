@@ -26,24 +26,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.example.sharonapp.GameResult
 import com.example.sharonapp.R
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Red
-import com.example.sharonapp.ui.theme.SharonAppTheme
 
-// 완성
-class Result {
+class GameResultClass {
     companion object {
 
         @OptIn(ExperimentalFoundationApi::class)
         @Composable
-        fun ResultScreen(configuration: Configuration, navController: NavHostController) {
+        fun GameResultScreen(
+            gameResult: GameResult,
+            configuration: Configuration,
+            onNavigateToHome: () -> Unit
+        ) {
             val screenWidth: Int = configuration.screenWidthDp
             val screenHeight: Int = configuration.screenHeightDp
 
@@ -51,7 +51,7 @@ class Result {
 
 /* data format
 [
-    [playerState, rank, playerNumer, playerId, playTime],
+    [playerState, rank, playerNumber, playerId, playTime],
     [playerState, ...],
     ...
 ]
@@ -167,7 +167,7 @@ class Result {
                         }
                         Spacer(modifier = Modifier.height((screenHeight * 5/100).dp))
                         Button(
-                            onClick = { navController.navigate("home") },
+                            onClick = { onNavigateToHome() },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary

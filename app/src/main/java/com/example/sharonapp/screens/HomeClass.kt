@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.example.sharonapp.utility.SecondApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,11 +35,14 @@ import kotlinx.coroutines.withContext
 
 
 
-class Home {
+class HomeClass {
     companion object {
 
         @Composable
-        fun HomeScreen(configuration: Configuration, navController: NavHostController): String {
+        fun HomeScreen(
+            configuration: Configuration,
+            onNavigateToWaitingRoom: (idInput: String) -> Unit
+        ) {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
             var codeInput by remember { mutableStateOf("") }
@@ -48,7 +50,6 @@ class Home {
             val coroutineScope = rememberCoroutineScope()
             val apiService2 = remember { SecondApiService() }
             var idInput by remember { mutableStateOf("") }
-
 
             Scaffold { innerPadding ->
                 Box(
@@ -98,12 +99,12 @@ class Home {
                                         withContext(Dispatchers.IO) {
                                             apiService2.submitNickname(idInput)
                                         }
-                                        navController.navigate("waitingRoom")
+                                        onNavigateToWaitingRoom(idInput)
                                     } catch (e: Exception) {
                                         println("Error: ${e.message}")
                                     }
                                 }
-                                      },
+                            },
 
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
@@ -116,7 +117,6 @@ class Home {
                     }
                 }
             }
-            return idInput
         }
     }
 }

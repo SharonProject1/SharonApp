@@ -17,21 +17,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import com.example.sharonapp.InGame
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Yellow
 import com.example.sharonapp.ui.theme.Red
-import com.example.sharonapp.ui.theme.SharonAppTheme
 
-// 완성
-class InGame {
+class InGameClass {
     companion object {
         @Composable
-        fun InGameScreen(configuration: Configuration, gameState: List<Int> = listOf(180, 10, 10), navController: NavHostController) {
+        fun InGameScreen(
+            inGame: InGame,
+            configuration: Configuration,
+            gameState: List<Int> = listOf(180, 10, 10),
+            onNavigateToTermination: () -> Unit
+        ) {
             val screenWidth: Int = configuration.screenWidthDp
             val screenHeight: Int = configuration.screenHeightDp
 
@@ -113,7 +114,7 @@ class InGame {
                             )
                         }
                         Button(
-                            onClick = { navController.navigate("termination") },
+                            onClick = { onNavigateToTermination() },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary

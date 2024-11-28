@@ -15,16 +15,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import com.example.sharonapp.ui.theme.SharonAppTheme
+import com.example.sharonapp.Termination
 
-class Termination {
+class TerminationClass {
     companion object {
         @Composable
-        fun TerminationScreen(configuration: Configuration, navController: NavHostController) {
+        fun TerminationScreen(
+            termination: Termination,
+            configuration: Configuration,
+            onNavigateToResult: () -> Unit
+        ) {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
@@ -44,7 +45,7 @@ class Termination {
                     ) {
                         Text("종료 화면(그냥 이거 팝업으로 띄우자)")
                         Button(
-                            onClick = { navController.navigate("result") },
+                            onClick = { onNavigateToResult() },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary

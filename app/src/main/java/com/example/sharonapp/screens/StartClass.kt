@@ -16,26 +16,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import com.example.sharonapp.ui.theme.SharonAppTheme
 import kotlinx.coroutines.delay
 
 // 완성
-class Start {
+class StartClass {
     companion object {
         @Composable
-        fun StartScreen(configuration: Configuration, navController: NavHostController) {
+        fun StartScreen(
+            configuration: Configuration,
+            onNavigateToHome: () -> Unit
+        ) {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
             LaunchedEffect(Unit) {
                 delay(2000)
-                navController.navigate("home")
+                onNavigateToHome()
             }
 
             Scaffold(

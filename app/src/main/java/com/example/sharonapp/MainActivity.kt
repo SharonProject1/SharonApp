@@ -1,29 +1,27 @@
 package com.example.sharonapp
 
 import android.content.pm.ActivityInfo
-import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.sharonapp.screens.Countdown
-import com.example.sharonapp.screens.Home
-import com.example.sharonapp.screens.InGame
-import com.example.sharonapp.screens.Result
-import com.example.sharonapp.screens.Start
-import com.example.sharonapp.screens.Termination
-import com.example.sharonapp.screens.WaitingRoom
+import androidx.navigation.toRoute
+import com.example.sharonapp.screens.CountdownClass
+import com.example.sharonapp.screens.HomeClass
+import com.example.sharonapp.screens.InGameClass
+import com.example.sharonapp.screens.GameResultClass
+import com.example.sharonapp.screens.StartClass
+import com.example.sharonapp.screens.TerminationClass
+import com.example.sharonapp.screens.WaitingRoomClass
 import com.example.sharonapp.ui.theme.SharonAppTheme
-import kotlin.contracts.contract
+import kotlinx.serialization.Serializable
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,55 +30,85 @@ class MainActivity : ComponentActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         setContent {
-            var idInput by remember { mutableStateOf("") } // 이거 왜 var?
+            var userId by remember { mutableStateOf("") }
 
             val configuration = LocalConfiguration.current
 
             SharonAppTheme {
 
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "start") {
-                    composable("start") {
-                        Start.StartScreen(
+                NavHost(navController = navController, startDestination = WaitingRoom) {
+                    composable<Start> {
+                        StartClass.StartScreen(
                             configuration = configuration,
-                            navController = navController
+                            onNavigateToHome = {
+                                navController.navigate(route = Home)
+                            }
                         )
                     }
-                    composable("home") {
-                        Home.HomeScreen(
+                    composable<Home> {
+                        HomeClass.HomeScreen(
                             configuration = configuration,
-                            navController = navController
+                            onNavigateToWaitingRoom = { idInput ->
+                                userId = idInput
+                                navController.navigate(
+                                    route = WaitingRoom(userId = userId)
+                                )
+                            }
                         )
                     }
-                    composable("waitingRoom") {
-                        WaitingRoom.WaitingRoomScreen(
-                            idInput,
+                    composable<WaitingRoom> { navBackStackEntry ->
+                        val waitingRoom: WaitingRoom = navBackStackEntry.toRoute()
+                        WaitingRoomClass.WaitingRoomScreen(
+                            waitingRoom = waitingRoom,
                             configuration = configuration,
-                            navController = navController
+                            onNavigateToCountdown = {
+                                navController.navigate(route = Countdown)
+                            }
                         )
                     }
-                    composable("inGame") {
-                        InGame.InGameScreen(
+                    composable<Countdown> {
+                        CountdownClass.CountdownScreen(
                             configuration = configuration,
-                            navController = navController
+                            onNavigateToInGame = {
+                                navController.navigate(
+                                    route = InGame(userId = userId)
+                                )
+                            }
                         )
                     }
-                    composable("termination") {
-                        Termination.TerminationScreen(
+                    composable<InGame> { navBackStackEntry ->
+                        val inGame: InGame = navBackStackEntry.toRoute()
+                        InGameClass.InGameScreen(
+                            inGame = inGame,
                             configuration = configuration,
-                            navController = navController
+                            onNavigateToTermination = {
+                                navController.navigate(
+                                    route = Termination(userId = userId)
+                                )
+                            }
                         )
                     }
-                    composable("result") {
-                        Result.ResultScreen(
+                    composable<Termination> { navBackStackEntry ->
+                        val termination: Termination = navBackStackEntry.toRoute()
+                        TerminationClass.TerminationScreen(
+                            termination = termination,
                             configuration = configuration,
-                            navController = navController
+                            onNavigateToResult = {
+                                navController.navigate(
+                                    route = GameResult(userId = userId)
+                                )
+                            }
                         )
                     }
-                    composable("countdown") {
-                        Countdown.CountdownScreen(
+                    composable<GameResult> { navBackStackEntry ->
+                        val gameResult: GameResult = navBackStackEntry.toRoute()
+                        GameResultClass.GameResultScreen(
+                            gameResult = gameResult,
                             configuration = configuration,
-                            navController = navController
+                            onNavigateToHome = {
+                                navController.navigate(route = Home)
+                            }
                         )
                     }
                 }
@@ -88,6 +116,27 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+@Serializable
+object Start
+
+@Serializable
+object Home
+
+@Serializable
+data class WaitingRoom(val userId: String)
+
+@Serializable
+object Countdown
+
+@Serializable
+data class InGame(val userId: String)
+
+@Serializable
+data class Termination(val userId: String)
+
+@Serializable
+data class GameResult(val userId: String)
 
 //
 //@Preview(showBackground = true)

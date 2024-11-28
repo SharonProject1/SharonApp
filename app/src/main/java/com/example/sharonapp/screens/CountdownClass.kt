@@ -20,18 +20,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import com.example.sharonapp.ui.theme.SharonAppTheme
 import kotlinx.coroutines.delay
 
-class Countdown {
+class CountdownClass {
     companion object {
         @Composable
-        fun CountdownScreen(configuration: Configuration, navController: NavHostController) {
+        fun CountdownScreen(
+            configuration: Configuration,
+            onNavigateToInGame: () -> Unit
+        ) {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
             
@@ -43,7 +42,7 @@ class Countdown {
                     else delay(1000)
                     count--
                 }
-                navController.navigate("inGame")
+                onNavigateToInGame()
             }
 
             val displayText = if(count in 1..3) "$count" else "시작"
