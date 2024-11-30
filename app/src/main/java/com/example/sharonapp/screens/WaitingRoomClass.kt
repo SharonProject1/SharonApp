@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -63,11 +64,10 @@ class WaitingRoomClass {
         @Composable
         fun WaitingRoomScreen(
             waitingRoom: WaitingRoom,
-            configuration: Configuration,
             onNavigateToCountdown: () -> Unit
         ) {
-            val screenWidth = configuration.screenWidthDp
-            val screenHeight = configuration.screenHeightDp
+            val screenWidth: Int = LocalConfiguration.current.screenWidthDp
+            val screenHeight: Int = LocalConfiguration.current.screenHeightDp
 
             val focusManager = LocalFocusManager.current
             val isButtonEnabled = remember { mutableStateOf(false) }
@@ -235,7 +235,7 @@ class WaitingRoomClass {
             screenWidth: Int, playerData: List<List<String>>
         ) {
             if (playerData.isEmpty() || index >= playerData.size) {
-                Text(text = "Loading...", fontSize = 16.sp) // 안전한 기본 UI
+                Text(text = "Loading...", fontSize = 16.sp)
                 return
             }
 
@@ -247,7 +247,7 @@ class WaitingRoomClass {
 
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape((screenWidth * 5 / 100).dp))
+                    .clip(RoundedCornerShape(15.dp))
                     .background(color = Color.DarkGray)
                     .size(size.dp)
                     .aspectRatio(1f)
@@ -255,12 +255,12 @@ class WaitingRoomClass {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .padding(top = (screenWidth * 2 / 100).dp, bottom = (screenWidth * 2 / 100).dp)
+                        .padding(top = (screenWidth * 2/100).dp, bottom = (screenWidth * 2/100).dp)
                         .fillMaxSize()
                 ) {
                     Text(
                         text = playerData[index][0],
-                        fontSize = (size / 6).sp,
+                        fontSize = (size/6).sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -283,7 +283,7 @@ class WaitingRoomClass {
                             )
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape((size * 64 / 30).dp, (size * 64 / 30).dp))
+                                    .clip(RoundedCornerShape((size * 64/30).dp, (size * 64/30).dp))
                                     .background(figureColor)
                                     .weight(2f)
                                     .aspectRatio(1f)
@@ -293,8 +293,8 @@ class WaitingRoomClass {
                                     TextField(
                                         value = textState,
                                         textStyle = TextStyle(
-                                            fontSize = (size / 6).sp,
-                                            lineHeight = (size / 4).sp,
+                                            fontSize = (size/6).sp,
+                                            lineHeight = (size/4).sp,
                                             color = White,
                                             textAlign = TextAlign.Center
                                         ),
@@ -310,8 +310,8 @@ class WaitingRoomClass {
                                         placeholder = {
                                             Text(
                                                 text = "번호 입력",
-                                                fontSize = (size * 8 / 100).sp,
-                                                lineHeight = (size / 4).sp,
+                                                fontSize = (size * 8/100).sp,
+                                                lineHeight = (size/4).sp,
                                                 textAlign = TextAlign.Center,
                                                 modifier = Modifier
                                                     .align(Alignment.Center)
@@ -339,7 +339,7 @@ class WaitingRoomClass {
                                 } else {
                                     Text(
                                         text = playerData[index][1],
-                                        fontSize = (size / 6).sp,
+                                        fontSize = (size/6).sp,
                                         modifier = Modifier.align(Alignment.Center)
                                     )
                                 }
@@ -351,12 +351,3 @@ class WaitingRoomClass {
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun WaitingRoomScreenPreview() {
-//    SharonAppTheme {
-//        val userId = "테스트"
-//        WaitingRoom.WaitingRoomScreen(userId, LocalConfiguration.current, navController = navController)
-//    }
-//}

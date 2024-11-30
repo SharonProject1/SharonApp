@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,11 +42,10 @@ class GameResultClass {
         @Composable
         fun GameResultScreen(
             gameResult: GameResult,
-            configuration: Configuration,
             onNavigateToHome: () -> Unit
         ) {
-            val screenWidth: Int = configuration.screenWidthDp
-            val screenHeight: Int = configuration.screenHeightDp
+            val screenWidth: Int = LocalConfiguration.current.screenWidthDp
+            val screenHeight: Int = LocalConfiguration.current.screenHeightDp
 
             val gameResult: List<List<String>> //json으로 받아온 데이터
 

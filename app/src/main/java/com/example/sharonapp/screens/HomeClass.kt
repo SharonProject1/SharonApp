@@ -25,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,11 +41,11 @@ class HomeClass {
 
         @Composable
         fun HomeScreen(
-            configuration: Configuration,
             onNavigateToWaitingRoom: (idInput: String) -> Unit
         ) {
-            val screenWidth = configuration.screenWidthDp
-            val screenHeight = configuration.screenHeightDp
+            val screenWidth: Int = LocalConfiguration.current.screenWidthDp
+            val screenHeight: Int = LocalConfiguration.current.screenHeightDp
+
             var codeInput by remember { mutableStateOf("") }
 
             val coroutineScope = rememberCoroutineScope()

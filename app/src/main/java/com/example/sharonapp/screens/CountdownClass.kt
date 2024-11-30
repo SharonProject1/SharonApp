@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -28,12 +29,11 @@ class CountdownClass {
     companion object {
         @Composable
         fun CountdownScreen(
-            configuration: Configuration,
             onNavigateToInGame: () -> Unit
         ) {
-            val screenWidth = configuration.screenWidthDp
-            val screenHeight = configuration.screenHeightDp
-            
+            val screenWidth: Int = LocalConfiguration.current.screenWidthDp
+            val screenHeight: Int = LocalConfiguration.current.screenHeightDp
+
             var count by remember { mutableStateOf(4) }
 
             LaunchedEffect(Unit) {
