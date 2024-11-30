@@ -91,7 +91,7 @@ class WaitingRoomClass {
             }
             
             var tempsignal by remember { mutableStateOf(isRunningResponse(data = false)) }
-            var pD by remember { mutableStateOf(ServerResponse(data = listOf())) }
+            var playerDataResponsed by remember { mutableStateOf(ServerResponse(data = listOf())) }
             var numberOfPlayers by remember { mutableIntStateOf(7) }
             var playerData by remember { mutableStateOf(listOf<List<String>>()) }
             
@@ -128,13 +128,13 @@ class WaitingRoomClass {
             LaunchedEffect(checkResponse.string) {
                 if(checkResponse.needToUpdate) {
                     try {
-                        pD = withContext(Dispatchers.IO) {
+                        playerDataResponsed = withContext(Dispatchers.IO) {
                             apiService.getPlayerData(userId)
                         }
-                        playerData = pD.data
-                        numberOfPlayers = pD.pCount
+                        playerData = playerDataResponsed.data
+                        numberOfPlayers = playerDataResponsed.pCount
                     } catch (e: Exception) {
-                        val tempData = listOf(
+                        val templayerDataResponsedata = listOf(
                                   listOf("나 자신", "NaN", "false", "true", "false"),
                                   listOf("테스트용1", "1", "false", "true", "false"),
                                   listOf("테스트용2", "2", "false", "true", "false"),
@@ -146,8 +146,8 @@ class WaitingRoomClass {
                                   listOf("테스트용8", "8", "false", "true", "false"),
                                   listOf("테스트용9", "9", "true", "true", "false")
                               )
-                        playerData = tempData
-                        numberOfPlayers = tempData.size
+                        playerData = templayerDataResponsedata
+                        numberOfPlayers = templayerDataResponsedata.size
                     }
                 }
             }
@@ -252,7 +252,6 @@ fun PlayerBox(
     var figureColor = Red
     val isReady = playerData[index][2]
     val apiService = remember { createApiService() }
-    val apiService2 = remember { SecondApiService() }
     var isInitialized by remember { mutableStateOf(false) }
 
     if (isReady == "true")
@@ -312,9 +311,11 @@ fun PlayerBox(
                                     textAlign = TextAlign.Center
                                 ),
                                 onValueChange = {
+                                    val isDuplicated = playerData.drop(1).any { player -> player[1] == it }
+
                                     if (it.all { it.isDigit() } && it.length <= 3) {
                                         textState = it
-                                        isButtonEnabled.value = it.isNotEmpty()
+                                        isButtonEnabled.value = it.isNotEmpty() && !isDuplicated
                                     }
                                 },
                                 placeholder = {
@@ -348,7 +349,7 @@ fun PlayerBox(
                             )
                         } else {
                             Text(
-                                text = playerData[index][1],
+                                text = if(playerData[index][1] == "NaN") "-" else playerData[index][1],
                                 fontSize = (size / 6).sp,
                                 modifier = Modifier.align(Alignment.Center)
                             )
