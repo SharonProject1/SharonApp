@@ -140,20 +140,38 @@ class InGameClass {
                     }
                 }
             }
-            
+            var BooleanChanged = remember { mutableStateOf(0) }
+            var isRunning = remember { mutableStateOf(true) }
+            var straightBoolean by remember { mutableStateOf(false) }
+            var crossBoolean by remember { mutableStateOf(true) }
             LaunchedEffect(Unit) {
-                while(true) {
+                while(isRunning.value) {
                     try {
                         withContext(Dispatchers.IO) {
-                            val getState = apiService.getGameState()
-                            gameStateData = getState
+                            apiService.connectionCheck(userId)
+                            var getstate = apiService.getGameState()
+                            gameState = getstate
                         }
-                        timeLeft = gameStateData.data[8].toInt()
-                        numberOfAlivePlayers = gameStateData.data[6].toInt()
-                        numberOfPlayers = gameStateData.data[5].toInt()
+                        timeLeft = gameState.data[8].toInt()
+                        numberOfAlivePlayers = gameState.data[6].toInt()
+                        numberOfPlayers = gameState.data[5].toInt()
+
+                        if(gameState.data[0] == "false" && straightBoolean)
+                        {
+                            BooleanChanged.value++
+                            straightBoolean = false
+                        }
+                        if(gameState.data[0] == "true"&& !straightBoolean)
+                        {
+                            BooleanChanged.value++
+                            straightBoolean = true
+                        }
+                        if(BooleanChanged.value == 2)
+                        {
+                            isRunning.value = false
+                        }
                         delay(100)
-                    }
-                    catch (e: Exception) {
+                    } catch (e: Exception) {
                         println("도비")
                     }
                 }

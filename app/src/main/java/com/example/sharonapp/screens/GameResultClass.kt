@@ -24,6 +24,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +42,10 @@ import com.example.sharonapp.R
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Red
 import com.example.sharonapp.ui.theme.SharonAppTheme
+import com.example.sharonapp.utility.ServerResponse
+import com.example.sharonapp.utility.createApiService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class GameResultClass {
     companion object {
@@ -52,8 +61,24 @@ class GameResultClass {
 
             val userId = gameResult.userId
 
-            val gameResultData: List<List<String>> //json으로 받아온 데이터
+            var gameResultData by remember { mutableStateOf(listOf<List<String>>()) }
+            val apiService = remember { createApiService() }
+            var playerDataResponsed by remember { mutableStateOf(ServerResponse(data = listOf())) }
 
+            LaunchedEffect(Unit) {
+                try {
+                    withContext(Dispatchers.IO)
+                    {
+                        playerDataResponsed = apiService.getPlayerState()
+                    }
+                    gameResultData = playerDataResponsed.data
+                }
+                catch (e: Exception)
+                {
+                    println("${e.message} 냐옹")
+                }
+
+            }
 /* data format
 [
     [playerState, rank, playerNumber, playerId, playTime],
@@ -62,7 +87,7 @@ class GameResultClass {
 ]
 */
 
-            val testResult = listOf( // 삭제 바람
+            /* 테스트 데이터 val testResult = listOf( // 삭제 바람
                 listOf("생존", "1위", "39", "엄준식", "46s"),
                 listOf("생존", "2위", "71", "똥파리", "53초"),
                 listOf("탈락", "3위", "3", "아이시떼루", "시간 초과"),
@@ -71,7 +96,7 @@ class GameResultClass {
                 listOf("연결 끊김", "-", "39", "돌쇠", "-"),
             )
 
-            gameResultData = testResult
+            gameResultData = testResult */
 
             val pagerState = rememberPagerState(pageCount = { gameResultData.size })
 
