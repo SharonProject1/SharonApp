@@ -1,0 +1,497 @@
+Index: app/build.gradle.kts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>plugins {\r\n    alias(libs.plugins.android.application)\r\n    alias(libs.plugins.kotlin.android)\r\n    alias(libs.plugins.kotlin.compose)\r\n}\r\n\r\nandroid {\r\n    namespace = \"com.example.sharon\"\r\n    compileSdk = 35\r\n\r\n    defaultConfig {\r\n        applicationId = \"com.example.sharon\"\r\n        minSdk = 26\r\n        targetSdk = 35\r\n        versionCode = 1\r\n        versionName = \"1.0\"\r\n\r\n        testInstrumentationRunner = \"androidx.test.runner.AndroidJUnitRunner\"\r\n    }\r\n\r\n    buildTypes {\r\n        release {\r\n            isMinifyEnabled = false\r\n            proguardFiles(\r\n                getDefaultProguardFile(\"proguard-android-optimize.txt\"),\r\n                \"proguard-rules.pro\"\r\n            )\r\n        }\r\n    }\r\n    compileOptions {\r\n        sourceCompatibility = JavaVersion.VERSION_11\r\n        targetCompatibility = JavaVersion.VERSION_11\r\n    }\r\n    kotlinOptions {\r\n        jvmTarget = \"11\"\r\n    }\r\n    buildFeatures {\r\n        compose = true\r\n    }\r\n}\r\n\r\ndependencies {\r\n\r\n    implementation(libs.androidx.core.ktx)\r\n    implementation(libs.androidx.lifecycle.runtime.ktx)\r\n    implementation(libs.androidx.activity.compose)\r\n    implementation(platform(libs.androidx.compose.bom))\r\n    implementation(libs.androidx.ui)\r\n    implementation(libs.androidx.ui.graphics)\r\n    implementation(libs.androidx.ui.tooling.preview)\r\n    implementation(libs.androidx.material3)\r\n    testImplementation(libs.junit)\r\n    androidTestImplementation(libs.androidx.junit)\r\n    androidTestImplementation(libs.androidx.espresso.core)\r\n    androidTestImplementation(platform(libs.androidx.compose.bom))\r\n    androidTestImplementation(libs.androidx.ui.test.junit4)\r\n    debugImplementation(libs.androidx.ui.tooling)\r\n    debugImplementation(libs.androidx.ui.test.manifest)\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+--- a/app/build.gradle.kts	(revision 2b2626ecbc6f8af31f8b4401ffe929872e7e4681)
++++ b/app/build.gradle.kts	(date 1732692023089)
+@@ -2,6 +2,7 @@
+     alias(libs.plugins.android.application)
+     alias(libs.plugins.kotlin.android)
+     alias(libs.plugins.kotlin.compose)
++    id("kotlin-parcelize")
+ }
+ 
+ android {
+@@ -40,6 +41,16 @@
+ }
+ 
+ dependencies {
++// 코루틴 (Coroutine) 라이브러리
++
++    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
++    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
++
++    // Retrofit & GSON 라이브러리
++    implementation("com.squareup.retrofit2:retrofit:2.9.0")
++    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
++    implementation("com.google.code.gson:gson:2.10.1")
++    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+ 
+     implementation(libs.androidx.core.ktx)
+     implementation(libs.androidx.lifecycle.runtime.ktx)
+@@ -56,4 +67,8 @@
+     androidTestImplementation(libs.androidx.ui.test.junit4)
+     debugImplementation(libs.androidx.ui.tooling)
+     debugImplementation(libs.androidx.ui.test.manifest)
++
++    //parcelable
++    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0") // Kotlin 표준 라이브러리
++
+ }
+\ No newline at end of file
+Index: app/src/main/java/com/example/sharon/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.sharon\r\n\r\nimport android.content.pm.ActivityInfo\r\nimport android.os.Bundle\r\nimport androidx.activity.ComponentActivity\r\nimport androidx.activity.compose.setContent\r\nimport androidx.compose.runtime.Composable\r\nimport androidx.compose.runtime.getValue\r\nimport androidx.compose.runtime.mutableStateOf\r\nimport androidx.compose.runtime.remember\r\nimport androidx.compose.runtime.setValue\r\nimport androidx.compose.ui.platform.LocalConfiguration\r\nimport androidx.compose.ui.tooling.preview.Preview\r\nimport com.example.sharon.screens.Countdown\r\nimport com.example.sharon.screens.Home\r\nimport com.example.sharon.screens.InGame\r\nimport com.example.sharon.screens.Result\r\nimport com.example.sharon.screens.Start\r\nimport com.example.sharon.screens.Termination\r\nimport com.example.sharon.screens.WaitingRoom\r\nimport com.example.sharon.ui.theme.SharonTheme\r\n\r\nclass MainActivity : ComponentActivity() {\r\n    override fun onCreate(savedInstanceState: Bundle?) {\r\n        super.onCreate(savedInstanceState)\r\n\r\n        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT\r\n\r\n        setContent {\r\n\r\n            val configuration = LocalConfiguration.current\r\n\r\n            SharonTheme {\r\n\r\n                var currentScreen by remember { mutableStateOf(\"StartScreen\") }\r\n                // Nav 기능으로 화면 전환하자\r\n\r\n                when (currentScreen) {\r\n                    \"StartScreen\" -> Start.StartScreen(\r\n                        configuration = configuration,\r\n                        nextScreen = {\r\n                            currentScreen = \"HomeScreen\"\r\n                        }\r\n                    )\r\n                    \"HomeScreen\" -> Home.HomeScreen(\r\n                        configuration = configuration,\r\n                        nextScreen = {\r\n                            currentScreen = \"WaitingRoomScreen\"\r\n                        }\r\n                    )\r\n                    \"WaitingRoomScreen\" -> WaitingRoom.WaitingRoomScreen(\r\n                        configuration = configuration,\r\n                        nextScreen = {\r\n                            currentScreen = \"CountdownScreen\"\r\n                        }\r\n                    )\r\n                    \"CountdownScreen\" -> Countdown.CountdownScreen(\r\n                        configuration = configuration,\r\n                        nextScreen = {\r\n                            currentScreen = \"InGameScreen\"\r\n                        }\r\n                    )\r\n                    \"InGameScreen\" -> InGame.InGameScreen(\r\n                        configuration = configuration,\r\n                        nextScreen = {\r\n                            currentScreen = \"TerminationScreen\"\r\n                        }\r\n                    )\r\n                    \"TerminationScreen\" -> Termination.TerminationScreen(\r\n                        configuration = configuration,\r\n                        nextScreen = {\r\n                            currentScreen = \"ResultScreen\"\r\n                        }\r\n                    )\r\n                    \"ResultScreen\" -> Result.ResultScreen(\r\n                        configuration = configuration,\r\n                        nextScreen = {\r\n                            currentScreen = \"StartScreen\"\r\n                        }\r\n                    )\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n@Preview(showBackground = true)\r\n@Composable\r\nfun SharonPreview(){\r\n    val configuration = LocalConfiguration.current\r\n\r\n    SharonTheme {\r\n        var currentScreen by remember { mutableStateOf(\"StartScreen\") }\r\n        // StartScreen - HomeScreen - WaitingRoomScreen - CountdownScreen - InGameScreen - TerminationScreen - ResultScreen\r\n        // Nav 기능으로 화면 전환하자\r\n        when (currentScreen) {\r\n            \"StartScreen\" -> Start.StartScreen(\r\n                configuration = configuration,\r\n                nextScreen = {\r\n                    currentScreen = \"HomeScreen\"\r\n                }\r\n            )\r\n            \"HomeScreen\" -> Home.HomeScreen(\r\n                configuration = configuration,\r\n                nextScreen = {\r\n                    currentScreen = \"WaitingRoomScreen\"\r\n                }\r\n            )\r\n            \"WaitingRoomScreen\" -> WaitingRoom.WaitingRoomScreen(\r\n                configuration = configuration,\r\n                nextScreen = {\r\n                    currentScreen = \"CountdownScreen\"\r\n                }\r\n            )\r\n            \"CountdownScreen\" -> Countdown.CountdownScreen(\r\n                configuration = configuration,\r\n                nextScreen = {\r\n                    currentScreen = \"InGameScreen\"\r\n                }\r\n            )\r\n            \"InGameScreen\" -> InGame.InGameScreen(\r\n                configuration = configuration,\r\n                nextScreen = {\r\n                    currentScreen = \"TerminationScreen\"\r\n                }\r\n            )\r\n            \"TerminationScreen\" -> Termination.TerminationScreen(\r\n                configuration = configuration,\r\n                nextScreen = {\r\n                    currentScreen = \"ResultScreen\"\r\n                }\r\n            )\r\n            \"ResultScreen\" -> Result.ResultScreen(\r\n                configuration = configuration,\r\n                nextScreen = {\r\n                    currentScreen = \"StartScreen\"\r\n                }\r\n            )\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/sharon/MainActivity.kt b/app/src/main/java/com/example/sharon/MainActivity.kt
+--- a/app/src/main/java/com/example/sharon/MainActivity.kt	(revision 2b2626ecbc6f8af31f8b4401ffe929872e7e4681)
++++ b/app/src/main/java/com/example/sharon/MainActivity.kt	(date 1732620480811)
+@@ -27,6 +27,7 @@
+         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+ 
+         setContent {
++            var idInput by remember { mutableStateOf("") }
+ 
+             val configuration = LocalConfiguration.current
+ 
+@@ -42,16 +43,18 @@
+                             currentScreen = "HomeScreen"
+                         }
+                     )
+-                    "HomeScreen" -> Home.HomeScreen(
++                    "HomeScreen" -> idInput = Home.HomeScreen(
+                         configuration = configuration,
+                         nextScreen = {
+                             currentScreen = "WaitingRoomScreen"
+                         }
+                     )
+                     "WaitingRoomScreen" -> WaitingRoom.WaitingRoomScreen(
++idInput,
+                         configuration = configuration,
+                         nextScreen = {
+                             currentScreen = "CountdownScreen"
++
+                         }
+                     )
+                     "CountdownScreen" -> Countdown.CountdownScreen(
+@@ -88,11 +91,13 @@
+ @Composable
+ fun SharonPreview(){
+     val configuration = LocalConfiguration.current
++    var idInput by remember { mutableStateOf("") }
+ 
+     SharonTheme {
++
+         var currentScreen by remember { mutableStateOf("StartScreen") }
+-        // StartScreen - HomeScreen - WaitingRoomScreen - CountdownScreen - InGameScreen - TerminationScreen - ResultScreen
+         // Nav 기능으로 화면 전환하자
++
+         when (currentScreen) {
+             "StartScreen" -> Start.StartScreen(
+                 configuration = configuration,
+@@ -100,16 +105,18 @@
+                     currentScreen = "HomeScreen"
+                 }
+             )
+-            "HomeScreen" -> Home.HomeScreen(
++            "HomeScreen" -> idInput = Home.HomeScreen(
+                 configuration = configuration,
+                 nextScreen = {
+                     currentScreen = "WaitingRoomScreen"
+                 }
+             )
+             "WaitingRoomScreen" -> WaitingRoom.WaitingRoomScreen(
++                idInput,
+                 configuration = configuration,
+                 nextScreen = {
+                     currentScreen = "CountdownScreen"
++
+                 }
+             )
+             "CountdownScreen" -> Countdown.CountdownScreen(
+@@ -137,5 +144,4 @@
+                 }
+             )
+         }
+-    }
+-}
+\ No newline at end of file
++    }}
+\ No newline at end of file
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\">\r\n\r\n    <application\r\n        android:allowBackup=\"true\"\r\n        android:dataExtractionRules=\"@xml/data_extraction_rules\"\r\n        android:fullBackupContent=\"@xml/backup_rules\"\r\n        android:icon=\"@mipmap/ic_launcher\"\r\n        android:label=\"@string/app_name\"\r\n        android:roundIcon=\"@mipmap/ic_launcher_round\"\r\n        android:supportsRtl=\"true\"\r\n        android:theme=\"@style/Theme.Sharon\"\r\n        android:networkSecurityConfig=\"@xml/network_security_config\"\r\n        android:usesCleartextTraffic=\"true\"\r\n        tools:targetApi=\"31\">\r\n        <activity\r\n            android:name=\".MainActivity\"\r\n            android:exported=\"true\"\r\n            android:theme=\"@style/Theme.Sharon\">\r\n            <intent-filter>\r\n                <action android:name=\"android.intent.action.MAIN\" />\r\n\r\n                <category android:name=\"android.intent.category.LAUNCHER\" />\r\n            </intent-filter>\r\n        </activity>\r\n    </application>\r\n\r\n</manifest>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+--- a/app/src/main/AndroidManifest.xml	(revision 2b2626ecbc6f8af31f8b4401ffe929872e7e4681)
++++ b/app/src/main/AndroidManifest.xml	(date 1732618069035)
+@@ -1,6 +1,7 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:tools="http://schemas.android.com/tools">
++    <uses-permission android:name="android.permission.INTERNET" />
+ 
+     <application
+         android:allowBackup="true"
+Index: app/src/main/java/com/example/sharon/screens/WaitingRoom.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.sharon.screens\r\n\r\nimport android.content.res.Configuration\r\nimport androidx.compose.foundation.background\r\nimport androidx.compose.foundation.layout.Arrangement\r\nimport androidx.compose.foundation.layout.Box\r\nimport androidx.compose.foundation.layout.Column\r\nimport androidx.compose.foundation.layout.Spacer\r\nimport androidx.compose.foundation.layout.aspectRatio\r\nimport androidx.compose.foundation.layout.fillMaxSize\r\nimport androidx.compose.foundation.layout.height\r\nimport androidx.compose.foundation.layout.padding\r\nimport androidx.compose.foundation.layout.size\r\nimport androidx.compose.foundation.lazy.grid.GridCells\r\nimport androidx.compose.foundation.lazy.grid.LazyVerticalGrid\r\nimport androidx.compose.foundation.shape.CircleShape\r\nimport androidx.compose.foundation.shape.RoundedCornerShape\r\nimport androidx.compose.material3.Button\r\nimport androidx.compose.material3.ButtonDefaults\r\nimport androidx.compose.material3.MaterialTheme\r\nimport androidx.compose.material3.Scaffold\r\nimport androidx.compose.material3.Text\r\nimport androidx.compose.runtime.Composable\r\nimport androidx.compose.runtime.getValue\r\nimport androidx.compose.runtime.mutableStateOf\r\nimport androidx.compose.runtime.remember\r\nimport androidx.compose.ui.Alignment\r\nimport androidx.compose.ui.Modifier\r\nimport androidx.compose.ui.draw.clip\r\nimport androidx.compose.ui.graphics.Color\r\nimport androidx.compose.ui.platform.LocalConfiguration\r\nimport androidx.compose.ui.text.style.TextOverflow\r\nimport androidx.compose.ui.tooling.preview.Preview\r\nimport androidx.compose.ui.unit.dp\r\nimport androidx.compose.ui.unit.sp\r\nimport com.example.sharon.ui.theme.Green\r\nimport com.example.sharon.ui.theme.Red\r\nimport com.example.sharon.ui.theme.SharonTheme\r\n\r\n// 추후 삭제 요망\r\nval testData = listOf(\r\n    listOf(\"테스트용1\", \"999\", \"false\", \"true\", \"false\"),\r\n    listOf(\"테스트용2\", \"999\", \"false\", \"true\", \"false\"),\r\n    listOf(\"테스트용3\", \"999\", \"true\", \"true\", \"false\"),\r\n    listOf(\"테스트용4\", \"999\", \"false\", \"true\", \"false\"),\r\n    listOf(\"테스트용5\", \"999\", \"true\", \"true\", \"false\"),\r\n    listOf(\"테스트용6\", \"999\", \"false\", \"true\", \"false\"),\r\n    listOf(\"테스트용7\", \"999\", \"true\", \"true\", \"false\"),\r\n    listOf(\"테스트용8\", \"999\", \"false\", \"true\", \"false\"),\r\n    listOf(\"테스트용9\", \"999\", \"true\", \"true\", \"false\")\r\n)\r\n\r\nclass WaitingRoom {\r\n    companion object {\r\n        @Composable\r\n        fun WaitingRoomScreen(configuration: Configuration, nextScreen: () -> Unit) {\r\n            val screenWidth = configuration.screenWidthDp\r\n            val screenHeight = configuration.screenHeightDp\r\n\r\n            val playerData: List<List<String>> = testData\r\n\r\n            val numberOfPlayers by remember { mutableStateOf(playerData.size) }\r\n\r\n            Scaffold { innerPadding ->\r\n                Box(\r\n                    modifier = Modifier\r\n                        .background(MaterialTheme.colorScheme.background)\r\n                        .fillMaxSize()\r\n                        .padding(innerPadding),\r\n                ) {\r\n                    Column(\r\n                        verticalArrangement = Arrangement.Center,\r\n                        horizontalAlignment = Alignment.CenterHorizontally,\r\n                        modifier = Modifier.fillMaxSize()\r\n                    ) {\r\n                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))\r\n                        Text(\r\n                            text = \"Test Room\",\r\n                            fontSize = (screenWidth * 10/100).sp\r\n                        )\r\n                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))\r\n\r\n                        val cellSize = screenWidth * 30/100\r\n                        LazyVerticalGrid(\r\n                            horizontalArrangement = Arrangement.spacedBy((screenWidth * 2/100).dp, Alignment.CenterHorizontally),\r\n                            verticalArrangement = Arrangement.spacedBy((screenWidth * 2/100).dp, Alignment.CenterVertically),\r\n                            columns = GridCells.FixedSize(cellSize.dp),\r\n                            modifier = Modifier.weight(1f)\r\n                        ) {\r\n                            items(numberOfPlayers) { index ->\r\n                                PlayerBox(\r\n                                    size = cellSize,\r\n                                    index = index,\r\n                                    screenWidth = screenWidth,\r\n                                    playerData = playerData\r\n                                )\r\n                            }\r\n                        }\r\n                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))\r\n                        PlayerBox(\r\n                            size = (screenHeight * 30/100),\r\n                            index = 0,\r\n                            screenWidth = screenWidth,\r\n                            playerData = playerData\r\n                        )\r\n                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))\r\n                        Button(\r\n                            onClick = { nextScreen() },\r\n                            colors = ButtonDefaults.buttonColors(\r\n                                containerColor = MaterialTheme.colorScheme.primary,\r\n                                contentColor = MaterialTheme.colorScheme.onPrimary\r\n                            )\r\n                        ) {\r\n                            Text(\"준비 완료\")\r\n                        }\r\n                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n@Composable\r\nfun PlayerBox(size: Int, index: Int, screenWidth: Int, playerData: List<List<String>>) {\r\n\r\n    var figureColor = Red\r\n\r\n    val isReady = playerData[index][2]\r\n    if(isReady == \"true\")\r\n        figureColor = Green\r\n\r\n    Box(\r\n        modifier = Modifier\r\n            .clip(RoundedCornerShape((screenWidth * 5/100).dp))\r\n            .background(color = Color.DarkGray)\r\n            .size(size.dp)\r\n            .aspectRatio(1f)\r\n    ) {\r\n        Column(\r\n            horizontalAlignment = Alignment.CenterHorizontally,\r\n            modifier = Modifier\r\n                .padding(top = (screenWidth * 2/100).dp, bottom = (screenWidth * 2/100).dp)\r\n                .fillMaxSize()\r\n        ) {\r\n            Text(\r\n                text = playerData[index][0],\r\n                fontSize = (size/6).sp,\r\n                maxLines = 1,\r\n                overflow = TextOverflow.Ellipsis\r\n            )\r\n            Box(\r\n                modifier = Modifier\r\n                    .aspectRatio(1f)\r\n                    .weight(1f)\r\n            ) {\r\n                Column(\r\n                    horizontalAlignment = Alignment.CenterHorizontally,\r\n                    modifier = Modifier.fillMaxSize()\r\n                ) {\r\n                    Box(\r\n                        modifier = Modifier\r\n                            .clip(CircleShape)\r\n                            .background(figureColor)\r\n                            .weight(1f)\r\n                            .aspectRatio(1f)\r\n                            .fillMaxSize()\r\n                    )\r\n                    Box(\r\n                        modifier = Modifier\r\n                            .clip(RoundedCornerShape((size * 64/30).dp, (size * 64/30).dp))\r\n                            .background(figureColor)\r\n                            .weight(2f)\r\n                            .aspectRatio(1f)\r\n                            .fillMaxSize()\r\n                    ) {\r\n                        Text(\r\n                            text = playerData[index][1],\r\n                            fontSize = (size/6).sp,\r\n                            modifier = Modifier.align(Alignment.Center)\r\n                        )\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n@Preview(showBackground = true)\r\n@Composable\r\nfun WaitingRoomScreenPreview() {\r\n    SharonTheme {\r\n        WaitingRoom.WaitingRoomScreen(LocalConfiguration.current, nextScreen = {})\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/sharon/screens/WaitingRoom.kt b/app/src/main/java/com/example/sharon/screens/WaitingRoom.kt
+--- a/app/src/main/java/com/example/sharon/screens/WaitingRoom.kt	(revision 2b2626ecbc6f8af31f8b4401ffe929872e7e4681)
++++ b/app/src/main/java/com/example/sharon/screens/WaitingRoom.kt	(date 1732695183233)
+@@ -21,9 +21,13 @@
+ import androidx.compose.material3.Scaffold
+ import androidx.compose.material3.Text
+ import androidx.compose.runtime.Composable
++import androidx.compose.runtime.LaunchedEffect
+ import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableIntStateOf
+ import androidx.compose.runtime.mutableStateOf
+ import androidx.compose.runtime.remember
++import androidx.compose.runtime.saveable.rememberSaveable
++import androidx.compose.runtime.setValue
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.draw.clip
+@@ -36,8 +40,10 @@
+ import com.example.sharon.ui.theme.Green
+ import com.example.sharon.ui.theme.Red
+ import com.example.sharon.ui.theme.SharonTheme
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.delay
++import kotlinx.coroutines.withContext
+ 
+-// 추후 삭제 요망
+ val testData = listOf(
+     listOf("테스트용1", "999", "false", "true", "false"),
+     listOf("테스트용2", "999", "false", "true", "false"),
+@@ -49,17 +55,51 @@
+     listOf("테스트용8", "999", "false", "true", "false"),
+     listOf("테스트용9", "999", "true", "true", "false")
+ )
+-
+ class WaitingRoom {
+     companion object {
+         @Composable
+-        fun WaitingRoomScreen(configuration: Configuration, nextScreen: () -> Unit) {
++        fun WaitingRoomScreen(idInput: String, configuration: Configuration, nextScreen: () -> Unit) {
+             val screenWidth = configuration.screenWidthDp
+             val screenHeight = configuration.screenHeightDp
+ 
+-            val playerData: List<List<String>> = testData
++            var connection by rememberSaveable { mutableStateOf(true) }
++            val apiService = remember { createApiService() }
++            val apiService2 = remember { SecondApiService() }
++            var checkResponse by remember { mutableStateOf<Checkconnection?>(null) } // 상태로 관찰 가능하게 설정
++            var pD by remember  { mutableStateOf(ServerResponse(data = listOf())) }
++
++            var numberOfPlayers by remember { mutableIntStateOf(1) }
++            var playerData by remember  { mutableStateOf(listOf<List<String>>()) }
+ 
+-            val numberOfPlayers by remember { mutableStateOf(playerData.size) }
++
++            LaunchedEffect(connection) {
++                if (connection) {
++                    while (connection) {
++                        try {
++                            val response = withContext(Dispatchers.IO) {
++                                apiService2.connectionCheck(idInput)
++                            }
++                            checkResponse = response // 상태 업데이트
++                        } catch (e: Exception) {
++                            connection = false
++                        }
++                        delay(150)
++                    }
++                }
++            }
++                LaunchedEffect(checkResponse?.NeedToUpdate) {
++                    try {
++                        pD = withContext(Dispatchers.IO) {
++                            apiService.getPlayerData(idInput)
++                        }
++                        playerData = pD.data
++                        numberOfPlayers = pD.pcount
++
++                    } catch (e: Exception) {
++                        playerData = testData
++                        numberOfPlayers = testData.size
++                    }
++                }
+ 
+             Scaffold { innerPadding ->
+                 Box(
+@@ -98,14 +138,16 @@
+                         }
+                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
+                         PlayerBox(
+-                            size = (screenHeight * 30/100),
++                            size = (screenHeight * 30 / 100),
+                             index = 0,
+                             screenWidth = screenWidth,
+                             playerData = playerData
+                         )
+                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
+                         Button(
+-                            onClick = { nextScreen() },
++                            onClick = {
++                                nextScreen()
++                                      },
+                             colors = ButtonDefaults.buttonColors(
+                                 containerColor = MaterialTheme.colorScheme.primary,
+                                 contentColor = MaterialTheme.colorScheme.onPrimary
+@@ -115,6 +157,7 @@
+                         }
+                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
+                     }
++
+                 }
+             }
+         }
+@@ -123,7 +166,10 @@
+ 
+ @Composable
+ fun PlayerBox(size: Int, index: Int, screenWidth: Int, playerData: List<List<String>>) {
+-
++    if (playerData.isEmpty() || index >= playerData.size) {
++        Text(text = "Loading...", fontSize = 16.sp) // 안전한 기본 UI
++        return
++    }
+     var figureColor = Red
+ 
+     val isReady = playerData[index][2]
+@@ -174,22 +220,23 @@
+                             .aspectRatio(1f)
+                             .fillMaxSize()
+                     ) {
+-                        Text(
++                        /*Text(
+                             text = playerData[index][1],
+                             fontSize = (size/6).sp,
+                             modifier = Modifier.align(Alignment.Center)
+-                        )
++                        )*/
+                     }
+                 }
+             }
+         }
+     }
+ }
+-
++/*
+ @Preview(showBackground = true)
+ @Composable
+ fun WaitingRoomScreenPreview() {
+     SharonTheme {
+-        WaitingRoom.WaitingRoomScreen(LocalConfiguration.current, nextScreen = {})
++        val idInput = ""
++        WaitingRoom.WaitingRoomScreen(idInput, LocalConfiguration.current, nextScreen = {})
+     }
+-}
+\ No newline at end of file
++}*/
+\ No newline at end of file
+Index: app/src/main/java/com/example/sharon/screens/Home.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.sharon.screens\r\n\r\nimport android.content.res.Configuration\r\nimport androidx.compose.foundation.background\r\nimport androidx.compose.foundation.layout.Arrangement\r\nimport androidx.compose.foundation.layout.Box\r\nimport androidx.compose.foundation.layout.Column\r\nimport androidx.compose.foundation.layout.Spacer\r\nimport androidx.compose.foundation.layout.fillMaxSize\r\nimport androidx.compose.foundation.layout.fillMaxWidth\r\nimport androidx.compose.foundation.layout.height\r\nimport androidx.compose.foundation.layout.padding\r\nimport androidx.compose.foundation.text.KeyboardOptions\r\nimport androidx.compose.material3.Button\r\nimport androidx.compose.material3.ButtonDefaults\r\nimport androidx.compose.material3.MaterialTheme\r\nimport androidx.compose.material3.Scaffold\r\nimport androidx.compose.material3.Text\r\nimport androidx.compose.material3.TextField\r\nimport androidx.compose.runtime.Composable\r\nimport androidx.compose.runtime.getValue\r\nimport androidx.compose.runtime.mutableStateOf\r\nimport androidx.compose.runtime.remember\r\nimport androidx.compose.runtime.setValue\r\nimport androidx.compose.ui.Alignment\r\nimport androidx.compose.ui.Modifier\r\nimport androidx.compose.ui.platform.LocalConfiguration\r\nimport androidx.compose.ui.text.input.KeyboardType\r\nimport androidx.compose.ui.text.input.TextFieldValue\r\nimport androidx.compose.ui.tooling.preview.Preview\r\nimport androidx.compose.ui.unit.dp\r\nimport androidx.compose.ui.unit.sp\r\nimport com.example.sharon.ui.theme.SharonTheme\r\n\r\nclass Home {\r\n    companion object {\r\n        @Composable\r\n        fun HomeScreen(configuration: Configuration, nextScreen: () -> Unit) {\r\n            val screenWidth = configuration.screenWidthDp\r\n            val screenHeight = configuration.screenHeightDp\r\n\r\n            var codeInput by remember { mutableStateOf(TextFieldValue(\"\")) }\r\n            var idInput by remember { mutableStateOf(TextFieldValue(\"\")) }\r\n\r\n            Scaffold { innerPadding ->\r\n                Box(\r\n                    modifier = Modifier\r\n                        .background(MaterialTheme.colorScheme.background)\r\n                        .fillMaxSize()\r\n                        .padding(innerPadding)\r\n                ) {\r\n                    Column(\r\n                        verticalArrangement = Arrangement.Center,\r\n                        horizontalAlignment = Alignment.CenterHorizontally,\r\n                        modifier = Modifier\r\n                            .padding(16.dp)\r\n                            .fillMaxSize()\r\n                    ) {\r\n                        Text(\r\n                            text = \"무궁화 꽃이\",\r\n                            fontSize = (screenWidth * 10/100).sp,\r\n                            color = MaterialTheme.colorScheme.primary\r\n                        )\r\n                        Text(\r\n                            text = \"피었습니다!\",\r\n                            fontSize = (screenWidth * 10/100).sp,\r\n                            color = MaterialTheme.colorScheme.primary\r\n                        )\r\n                        Spacer(modifier = Modifier.height((screenHeight * 10/100).dp))\r\n                        TextField(\r\n                            value = codeInput,\r\n                            onValueChange = { codeInput = it },\r\n                            placeholder = { Text(text = \"대기실 코드\") },\r\n                            modifier = Modifier.fillMaxWidth(0.8f),\r\n                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)\r\n                        )\r\n                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))\r\n                        TextField(\r\n                            value = idInput,\r\n                            onValueChange = { idInput = it },\r\n                            placeholder = { Text(text = \"닉네임\") },\r\n                            modifier = Modifier.fillMaxWidth(0.8f),\r\n                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)\r\n                        )\r\n                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))\r\n                        Button(\r\n                            onClick = { nextScreen() },\r\n                            colors = ButtonDefaults.buttonColors(\r\n                                containerColor = MaterialTheme.colorScheme.primary,\r\n                                contentColor = MaterialTheme.colorScheme.onPrimary,\r\n                            ),\r\n                            modifier = Modifier.align(Alignment.CenterHorizontally)\r\n                        ) {\r\n                            Text(text = \"게임 시작\")\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n\r\n@Preview(showBackground = true)\r\n@Composable\r\nfun HomeScreenPreview() {\r\n    SharonTheme {\r\n        Home.HomeScreen(LocalConfiguration.current, nextScreen = {})\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/sharon/screens/Home.kt b/app/src/main/java/com/example/sharon/screens/Home.kt
+--- a/app/src/main/java/com/example/sharon/screens/Home.kt	(revision 2b2626ecbc6f8af31f8b4401ffe929872e7e4681)
++++ b/app/src/main/java/com/example/sharon/screens/Home.kt	(date 1732683867354)
+@@ -21,6 +21,7 @@
+ import androidx.compose.runtime.getValue
+ import androidx.compose.runtime.mutableStateOf
+ import androidx.compose.runtime.remember
++import androidx.compose.runtime.rememberCoroutineScope
+ import androidx.compose.runtime.setValue
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+@@ -31,16 +32,25 @@
+ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.unit.sp
+ import com.example.sharon.ui.theme.SharonTheme
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.launch
++import kotlinx.coroutines.withContext
++
++
+ 
+ class Home {
+     companion object {
++
+         @Composable
+-        fun HomeScreen(configuration: Configuration, nextScreen: () -> Unit) {
++        fun HomeScreen(configuration: Configuration, nextScreen: () -> Unit): String {
+             val screenWidth = configuration.screenWidthDp
+             val screenHeight = configuration.screenHeightDp
++            var codeInput by remember { mutableStateOf("") }
+ 
+-            var codeInput by remember { mutableStateOf(TextFieldValue("")) }
+-            var idInput by remember { mutableStateOf(TextFieldValue("")) }
++            val coroutineScope = rememberCoroutineScope()
++            val apiService2 = remember { SecondApiService() }
++            var idInput by remember { mutableStateOf("") }
++
+ 
+             Scaffold { innerPadding ->
+                 Box(
+@@ -84,7 +94,22 @@
+                         )
+                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
+                         Button(
+-                            onClick = { nextScreen() },
++                            onClick = {
++                                coroutineScope.launch {
++                                    try{
++
++                                        withContext(Dispatchers.IO) {
++                                            apiService2.submitNickname(idInput)
++                                        }
++                                        nextScreen()
++                                    } catch (e: Exception) {
++                                        // 에러만 처리
++                                        println("Error: ${e.message}")
++                                        nextScreen()
++                                    }
++                                }
++                                      },
++
+                             colors = ButtonDefaults.buttonColors(
+                                 containerColor = MaterialTheme.colorScheme.primary,
+                                 contentColor = MaterialTheme.colorScheme.onPrimary,
+@@ -96,14 +121,15 @@
+                     }
+                 }
+             }
++            return idInput
+         }
+     }
+ }
+-
++/*
+ @Preview(showBackground = true)
+-@Composable
++Composable
+ fun HomeScreenPreview() {
+     SharonTheme {
+         Home.HomeScreen(LocalConfiguration.current, nextScreen = {})
+     }
+-}
+\ No newline at end of file
++}*/
+\ No newline at end of file
+Index: .idea/deploymentTargetSelector.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/deploymentTargetSelector.xml b/.idea/deploymentTargetSelector.xml
+deleted file mode 100644
+--- a/.idea/deploymentTargetSelector.xml	(revision 2b2626ecbc6f8af31f8b4401ffe929872e7e4681)
++++ /dev/null	(revision 2b2626ecbc6f8af31f8b4401ffe929872e7e4681)
+@@ -1,16 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="deploymentTargetSelector">
+-    <selectionStates>
+-      <SelectionState runConfigName="app">
+-        <option name="selectionMode" value="DROPDOWN" />
+-      </SelectionState>
+-      <SelectionState runConfigName="InGameScreenPreview">
+-        <option name="selectionMode" value="DROPDOWN" />
+-      </SelectionState>
+-      <SelectionState runConfigName="CountdownScreenPreview">
+-        <option name="selectionMode" value="DROPDOWN" />
+-      </SelectionState>
+-    </selectionStates>
+-  </component>
+-</project>
+\ No newline at end of file
+Index: app/src/main/java/com/example/sharon/screens/SomeApiandDataclass.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/sharon/screens/SomeApiandDataclass.kt b/app/src/main/java/com/example/sharon/screens/SomeApiandDataclass.kt
+new file mode 100644
+--- /dev/null	(date 1732708298765)
++++ b/app/src/main/java/com/example/sharon/screens/SomeApiandDataclass.kt	(date 1732708298765)
+@@ -0,0 +1,60 @@
++package com.example.sharon.screens
++
++// 필요한 import 추가
++
++import android.os.Parcelable
++import com.google.gson.GsonBuilder
++import com.google.gson.annotations.SerializedName
++import kotlinx.parcelize.Parcelize
++import retrofit2.Retrofit
++import retrofit2.converter.gson.GsonConverterFactory
++import retrofit2.converter.scalars.ScalarsConverterFactory
++import retrofit2.http.GET
++import retrofit2.http.Path
++
++// Retrofit 인터페이스 및 데이터 클래스 정의
++data class Checkconnection(val connect: Boolean, val NeedToUpdate: Boolean)
++// 1. JSON 구조에 맞는 데이터 클래스 정의
++@Parcelize
++data class ServerResponse(
++    @SerializedName("data") val data: List<List<String>> // 2차원 배열에 다양한 자료형 포함
++) : Parcelable {
++    val pcount: Int
++        get() = data.size
++}
++data class sendReady(
++
++)
++
++interface ApiService {
++    @GET("/join/{nickname}")
++    suspend fun submitNickname(@Path("nickname") nickname: String): String
++
++    @GET("/check/{nickname}")
++    suspend fun connectionCheck(@Path("nickname") nickname: String): Checkconnection
++    @GET("/playerData/{nickname}")
++    suspend fun getPlayerData(@Path("nickname") nickname: String): ServerResponse
++}
++// 내부적으로 싱글톤을 관리하기 위한 객체
++private object RetrofitHolder {
++    private val retrofit: Retrofit by lazy {
++        Retrofit.Builder()
++            .baseUrl("http://sharonproject.ddns.net:5522") // 베이스 URL
++            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create())) // JSON 파싱용
++            .build()
++    }
++
++    val apiService: ApiService by lazy {
++        retrofit.create(ApiService::class.java)
++    }
++}
++fun createApiService(): ApiService {
++    return RetrofitHolder.apiService
++}
++fun SecondApiService(): ApiService {
++    return Retrofit.Builder()
++        .baseUrl("http://sharonproject.ddns.net:5522")
++        .addConverterFactory(ScalarsConverterFactory.create()) // 단순 문자열 처리용
++        .build()
++        .create(ApiService::class.java)
++}
+\ No newline at end of file

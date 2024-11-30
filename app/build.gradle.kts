@@ -7,12 +7,12 @@ plugins {
 }
 
 android {
-    namespace = "com.example.sharonapp"
+    namespace = "com.example.sharon"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.sharonapp"
-        minSdk = 28
+        applicationId = "com.example.sharon"
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -42,8 +42,7 @@ android {
 }
 
 dependencies {
-    //parcelable
-    implementation(libs.kotlin.stdlib) // Kotlin 표준 라이브러리
+// 코루틴 (Coroutine) 라이브러리
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
@@ -71,4 +70,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    //parcelable
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0") // Kotlin 표준 라이브러리
+
 }
