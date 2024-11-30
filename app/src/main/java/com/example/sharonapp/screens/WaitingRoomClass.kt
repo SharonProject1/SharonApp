@@ -315,7 +315,7 @@ fun PlayerBox(
 
                                     if (it.all { it.isDigit() } && it.length <= 3) {
                                         textState = it
-                                        isButtonEnabled.value = it.isNotEmpty() && !isDuplicated
+                                        isButtonEnabled.value = it.isNotEmpty() && !isDuplicated && (it.toInt() != 0)
                                     }
                                 },
                                 placeholder = {
@@ -358,6 +358,7 @@ fun PlayerBox(
                 }
             }
         }
+
         LaunchedEffect(isButtonOn) {
             if (isInitialized)
             {

@@ -29,11 +29,12 @@ class MainActivity : ComponentActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         setContent {
-            var userId by remember { mutableStateOf("") }
+
+            var userId by remember { mutableStateOf("None") }
 
             SharonAppTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = Start) {
+                NavHost(navController = navController, startDestination = Countdown) {
                     composable<Start> {
                         StartClass.StartScreen(
                             onNavigateToHome = {
@@ -85,7 +86,9 @@ class MainActivity : ComponentActivity() {
                         GameResultClass.GameResultScreen(
                             gameResult = gameResult,
                             onNavigateToHome = {
-                                navController.navigate(route = Home)
+                                navController.navigate(
+                                    route = Home
+                                )
                             }
                         )
                     }
@@ -112,3 +115,4 @@ data class InGame(val userId: String)
 
 @Serializable
 data class GameResult(val userId: String)
+//object GameResult

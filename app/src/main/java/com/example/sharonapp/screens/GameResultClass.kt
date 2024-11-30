@@ -53,11 +53,13 @@ class GameResultClass {
         @OptIn(ExperimentalFoundationApi::class)
         @Composable
         fun GameResultScreen(
-            gameResult: GameResult? = null,
+            gameResult: GameResult,
             onNavigateToHome: () -> Unit
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
+
+            val userId = gameResult.userId
 
             var gameResultData by remember { mutableStateOf(listOf<List<String>>()) }
             val apiService = remember { createApiService() }
@@ -234,10 +236,10 @@ class GameResultClass {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ResultScreenPreview() {
-    SharonAppTheme {
-        GameResultClass.GameResultScreen(onNavigateToHome = {})
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ResultScreenPreview() {
+//    SharonAppTheme {
+//        GameResultClass.GameResultScreen(onNavigateToHome = {})
+//    }
+//}
