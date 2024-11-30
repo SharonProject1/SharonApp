@@ -25,10 +25,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.example.sharonapp.utility.SecondApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,19 +36,21 @@ import kotlinx.coroutines.withContext
 
 
 
-class Home {
+class HomeClass {
     companion object {
 
         @Composable
-        fun HomeScreen(configuration: Configuration, navController: NavHostController): String {
-            val screenWidth = configuration.screenWidthDp
-            val screenHeight = configuration.screenHeightDp
+        fun HomeScreen(
+            onNavigateToWaitingRoom: (idInput: String) -> Unit
+        ) {
+            val screenWidth: Int = LocalConfiguration.current.screenWidthDp
+            val screenHeight: Int = LocalConfiguration.current.screenHeightDp
+
             var codeInput by remember { mutableStateOf("") }
 
             val coroutineScope = rememberCoroutineScope()
             val apiService2 = remember { SecondApiService() }
             var idInput by remember { mutableStateOf("") }
-
 
             Scaffold { innerPadding ->
                 Box(
@@ -98,12 +100,12 @@ class Home {
                                         withContext(Dispatchers.IO) {
                                             apiService2.submitNickname(idInput)
                                         }
-                                        navController.navigate("waitingRoom")
+                                        onNavigateToWaitingRoom(idInput)
                                     } catch (e: Exception) {
                                         println("Error: ${e.message}")
                                     }
                                 }
-                                      },
+                            },
 
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
@@ -116,7 +118,6 @@ class Home {
                     }
                 }
             }
-            return idInput
         }
     }
 }
