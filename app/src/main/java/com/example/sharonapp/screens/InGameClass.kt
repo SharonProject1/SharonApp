@@ -79,7 +79,7 @@ class InGameClass {
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
 
             // 이 부분은 편의에 따라 수정 협의 필요
-            val isVoicing by remember { mutableStateOf(false) } // from server
+            val isVoicing by remember { mutableStateOf(false) }
             val timeLeft: Int = gameState[0]
             val numberOfPlayers: Int = gameState[1]
             val numberOfAlivePlayers: Int = gameState[2]
