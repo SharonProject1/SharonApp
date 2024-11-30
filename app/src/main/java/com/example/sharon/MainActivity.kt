@@ -49,21 +49,20 @@ class MainActivity : ComponentActivity() {
                             currentScreen = "WaitingRoomScreen"
                         }
                     )
-                    "WaitingRoomScreen" -> WaitingRoom.WaitingRoomScreen(
+                    "WaitingRoomScreen" -> idInput = WaitingRoom.WaitingRoomScreen(
 idInput,
                         configuration = configuration,
                         nextScreen = {
                             currentScreen = "CountdownScreen"
-
                         }
                     )
-                    "CountdownScreen" -> Countdown.CountdownScreen(
+                    "CountdownScreen" -> idInput = Countdown.CountdownScreen(idInput,
                         configuration = configuration,
                         nextScreen = {
                             currentScreen = "InGameScreen"
                         }
                     )
-                    "InGameScreen" -> InGame.InGameScreen(
+                    "InGameScreen" -> InGame.InGameScreen(idInput,
                         configuration = configuration,
                         nextScreen = {
                             currentScreen = "TerminationScreen"
@@ -119,13 +118,13 @@ fun SharonPreview(){
 
                 }
             )
-            "CountdownScreen" -> Countdown.CountdownScreen(
+            "CountdownScreen" -> Countdown.CountdownScreen(idInput,
                 configuration = configuration,
                 nextScreen = {
                     currentScreen = "InGameScreen"
                 }
             )
-            "InGameScreen" -> InGame.InGameScreen(
+            "InGameScreen" -> InGame.InGameScreen(idInput,
                 configuration = configuration,
                 nextScreen = {
                     currentScreen = "TerminationScreen"

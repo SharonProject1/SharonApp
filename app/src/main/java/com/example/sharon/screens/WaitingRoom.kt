@@ -77,7 +77,7 @@ class WaitingRoom {
             idInput: String,
             configuration: Configuration,
             nextScreen: () -> Unit
-        ) {
+        ): String {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
@@ -228,6 +228,7 @@ class WaitingRoom {
                     if(startSignal) {nextScreen()}
                 }
             }
+            return idInput
         }
     }
 }

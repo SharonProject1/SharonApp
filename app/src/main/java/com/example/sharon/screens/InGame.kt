@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotApplyResult
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -41,17 +42,16 @@ import kotlinx.coroutines.withContext
 class InGame {
     companion object {
         @Composable
-        fun InGameScreen(configuration: Configuration, nextScreen: () -> Unit) {
+        fun InGameScreen(idInput: String, configuration: Configuration, nextScreen: () -> Unit) {
             val screenWidth: Int = configuration.screenWidthDp
             val screenHeight: Int = configuration.screenHeightDp
+
 
             val apiService = remember { createApiService() }
             var checkResponse by remember {
                 mutableStateOf(Checkconnection(connect = "tru", needToUpdate = true, string = "서승준병신"))
             }
             var gameState by remember { mutableStateOf(GameState(data = listOf())) }
-
-
             var timeLeft by remember { mutableStateOf(1) }
             var numberOfAlivePlayers by remember { mutableStateOf(1) }
             var numberOfPlayers by remember { mutableStateOf(1) }
@@ -163,14 +163,49 @@ class InGame {
                     }
                 }
             }
+            var eliminated by remember { mutableStateOf(false) }
+            var Success by remember { mutableStateOf(false) }
+
+            var firstEliminated by remember { mutableStateOf(false) }
+            var firstSuccess by remember { mutableStateOf(false) }
+            LaunchedEffect(eliminated) {
+                if (!firstEliminated)
+                {
+                    firstEliminated = true
+                }
+                else
+                {
+                    withContext(Dispatchers.IO)
+                    {
+                        apiService.sendFailed(idInput)
+                        /* 팝업 띄우소*/
+                    }
+                }
+            }
+            LaunchedEffect(Success) {
+                if (!firstSuccess)
+                {
+                    firstSuccess = true
+                }
+                else
+                {
+                    withContext(Dispatchers.IO)
+                    {
+                        apiService.sendSuccess(idInput)
+                        /*팝업 띄우소*/
+                    }
+                }
+            }
         }
     }
+
+
 }
 
 @Preview(showBackground = true)
 @Composable
 fun InGameScreenPreview() {
     SharonTheme {
-        InGame.InGameScreen(LocalConfiguration.current, nextScreen = {})
+        InGame.InGameScreen(idInput = "1",LocalConfiguration.current, nextScreen = {})
     }
 }

@@ -30,7 +30,7 @@ import kotlinx.coroutines.delay
 class Countdown {
     companion object {
         @Composable
-        fun CountdownScreen(configuration: Configuration, nextScreen: () -> Unit) {
+        fun CountdownScreen(idInput: String, configuration: Configuration, nextScreen: () -> Unit): String {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
             
@@ -89,6 +89,7 @@ class Countdown {
                     }
                 }
             }
+            return idInput
         }
     }
 }
@@ -97,6 +98,6 @@ class Countdown {
 @Composable
 fun CountdownScreenPreview() {
     SharonTheme {
-        Countdown.CountdownScreen(LocalConfiguration.current, nextScreen = {})
+        Countdown.CountdownScreen(idInput = "1",LocalConfiguration.current, nextScreen = {})
     }
 }

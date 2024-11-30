@@ -33,7 +33,6 @@ data class GameState(@SerializedName("data") var data: List<String>)
 interface ApiService {
     @GET("/join/{nickname}")
     suspend fun submitNickname(@Path("nickname") nickname: String): Response<String>
-
     @GET("/check/{nickname}")
     suspend fun connectionCheck(@Path("nickname") nickname: String): Response<Checkconnection>
     @GET("/playerData/{nickname}")
@@ -53,6 +52,10 @@ interface ApiService {
     ): Response<sendNum>
     @GET("/state")
     suspend fun getGameState(): GameState
+    @GET("/failed/{nickname}")
+    suspend fun sendFailed(@Path("nickname") nickname: String): Response<String>
+    @GET("/survived/{nickname}")
+    suspend fun sendSuccess(@Path("nickname") nickname: String): Response<String>
 }
 // 내부적으로 싱글톤을 관리하기 위한 객체
 private object RetrofitHolder {
