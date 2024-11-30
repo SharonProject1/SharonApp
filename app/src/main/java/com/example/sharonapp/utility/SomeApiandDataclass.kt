@@ -43,7 +43,6 @@ interface ApiService {
     suspend fun sendNotReady(@Path("nickname") nickname: String): Response<sendNum>//나중에 바꾸소
     @GET("/isRunning/{nickname}")
     suspend fun isRunning(@Path("nickname") nickname: String): Response<isRunningResponse>
-
     @GET("/inputNumber/{nickname}")
     suspend fun getInputNumber(
         @Path("nickname") nickname: String,           // 경로 변수
@@ -55,6 +54,8 @@ interface ApiService {
     suspend fun sendFailed(@Path("nickname") nickname: String): Response<String>
     @GET("/survived/{nickname}")
     suspend fun sendSuccess(@Path("nickname") nickname: String): Response<String>
+    @GET("/state")
+    suspend fun getPlayerState(): ServerResponse
 }
 // 내부적으로 싱글톤을 관리하기 위한 객체
 private object RetrofitHolder {
