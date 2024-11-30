@@ -150,18 +150,18 @@ class InGameClass {
                         withContext(Dispatchers.IO) {
                             apiService.connectionCheck(userId)
                             var getstate = apiService.getGameState()
-                            gameState = getstate
+                            gameStateData = getstate
                         }
-                        timeLeft = gameState.data[8].toInt()
-                        numberOfAlivePlayers = gameState.data[6].toInt()
-                        numberOfPlayers = gameState.data[5].toInt()
+                        timeLeft = gameStateData.data[8].toInt()
+                        numberOfAlivePlayers = gameStateData.data[6].toInt()
+                        numberOfPlayers = gameStateData.data[5].toInt()
 
-                        if(gameState.data[0] == "false" && straightBoolean)
+                        if(gameStateData.data[0] == "false" && straightBoolean)
                         {
                             BooleanChanged.value++
                             straightBoolean = false
                         }
-                        if(gameState.data[0] == "true"&& !straightBoolean)
+                        if(gameStateData.data[0] == "true"&& !straightBoolean)
                         {
                             BooleanChanged.value++
                             straightBoolean = true
