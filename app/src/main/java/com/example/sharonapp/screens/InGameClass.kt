@@ -98,9 +98,19 @@ class InGameClass {
             val threshold = 15f
 
             val canMove = !isVoicing
-            var motionDetected by remember { mutableStateOf(false) }
 
-            var isTagged by remember { mutableStateOf(false) }
+            var motionDetected by remember { mutableStateOf(false) } // true 되면 탈락 요청
+
+            var isTagged by remember { mutableStateOf(false) } // true 되면 생존 요청
+
+            var isFailedByTimeOut by remember { mutableStateOf(false) } // true 되면 탈락 요청
+
+            LaunchedEffect(timeLeft) {
+                if(timeLeft <= 0 && !isPlayerFinished) {
+                    isFailedByTimeOut = true
+                    isPlayerFinished = true
+                }
+            }
 
             LaunchedEffect(timeLeft, numberOfAlivePlayers) {
                 if(timeLeft <= 0 || numberOfAlivePlayers <= 0) {
