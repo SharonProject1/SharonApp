@@ -1,5 +1,10 @@
 package com.example.sharonapp.screens
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import android.content.res.Configuration
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -15,56 +20,30 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.modifier.modifierLocalConsumer
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import com.example.sharonapp.InGame
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Yellow
 import com.example.sharonapp.ui.theme.Red
-import com.example.sharonapp.ui.theme.SharonAppTheme
-import com.example.sharonapp.ui.theme.White
+import com.example.sharonapp.utility.Checkconnection
+import com.example.sharonapp.utility.GameState
+import com.example.sharonapp.utility.createApiService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlin.math.sign
-import kotlin.math.sqrt
+import kotlinx.coroutines.withContext
 
 class InGameClass {
     companion object {
@@ -78,11 +57,15 @@ class InGameClass {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
 
-            // 이 부분은 편의에 따라 수정 협의 필요
+            val apiService = remember { createApiService() }
+            var checkResponse by remember { mutableStateOf(Checkconnection(connect = "tru", needToUpdate = true, string = "서승준병신")) }
+            
+            var gameState by remember { mutableStateOf(GameState(data = listOf())) }
+            var timeLeft by remember { mutableStateOf(180) }
+            var numberOfAlivePlayers by remember { mutableStateOf(10) }
+            var numberOfPlayers by remember { mutableStateOf(10) }
+            
             val isVoicing by remember { mutableStateOf(false) }
-            val timeLeft: Int = gameState[0]
-            val numberOfPlayers: Int = gameState[1]
-            val numberOfAlivePlayers: Int = gameState[2]
 
             var isPlayerFinished by remember { mutableStateOf(false) }
             var isGameOver by remember { mutableStateOf(false) }
@@ -104,7 +87,58 @@ class InGameClass {
             var isTagged by remember { mutableStateOf(false) } // true 되면 생존 요청
 
             var isFailedByTimeOut by remember { mutableStateOf(false) } // true 되면 탈락 요청
+            
+            var eliminated = motionDetected && isFailedByTimeOut
+            var successed = isTagged
 
+            var firstEliminated by remember { mutableStateOf(false) }
+            var firstSuccess by remember { mutableStateOf(false) }
+            LaunchedEffect(eliminated) {
+                if (!firstEliminated)
+                {
+                    firstEliminated = true
+                }
+                else
+                {
+                    withContext(Dispatchers.IO)
+                    {
+                        apiService.sendFailed(idInput)
+                    }
+                }
+            }
+            
+            LaunchedEffect(Success) {
+                if (!firstSuccess)
+                {
+                    firstSuccess = true
+                }
+                else
+                {
+                    withContext(Dispatchers.IO)
+                    {
+                        apiService.sendSuccess(idInput)
+                    }
+                }
+            }
+            
+            LaunchedEffect(Unit) {
+                while(true) {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            var getstate = apiService.getGameState()
+                            gameState = getstate
+                        }
+                        timeLeft = gameState.data[8].toInt()
+                        numberOfAlivePlayers = gameState.data[6].toInt()
+                        numberOfPlayers = gameState.data[5].toInt()
+                        delay(100)
+                    }
+                    catch (e: Exception) {
+                        println("도비")
+                    }
+                }
+            }
+            
             LaunchedEffect(timeLeft) {
                 if(timeLeft <= 0 && !isPlayerFinished) {
                     isFailedByTimeOut = true
@@ -243,7 +277,7 @@ class InGameClass {
 
                             Spacer(modifier = Modifier.weight(0.3f))
                         }
-
+                        
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
@@ -303,7 +337,7 @@ class InGameClass {
                     }
                 }
             }
-
+            
             if(isTagged && isPlayerFinished && !isGameOver) {
                 GameOverDialog(
                     cause = "survived",

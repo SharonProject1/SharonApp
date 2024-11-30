@@ -102,7 +102,8 @@ class HomeClass {
                                         }
                                         onNavigateToWaitingRoom(idInput)
                                     } catch (e: Exception) {
-                                        println("Error: ${e.message}")
+                                        // 에러만 처리
+                                        onNavigateToWaitingRoom(idInput)
                                     }
                                 }
                             },
@@ -121,11 +122,3 @@ class HomeClass {
         }
     }
 }
-/*
-@Preview(showBackground = true)
-Composable
-fun HomeScreenPreview() {
-    SharonAppTheme {
-        Home.HomeScreen(LocalConfiguration.current, nextScreen = {})
-    }
-}*/

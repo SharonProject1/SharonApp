@@ -33,7 +33,6 @@ class CountdownClass {
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
-
             var count by remember { mutableStateOf(4) }
 
             LaunchedEffect(Unit) {
@@ -89,14 +88,4 @@ class CountdownClass {
                     }
                 }
             }
-        }
-    }
-}
-
-//@Preview(showBackground = true)
-//@Composable
-//fun CountdownScreenPreview() {
-//    SharonAppTheme {
-//        Countdown.CountdownScreen(LocalConfiguration.current, nextScreen = {})
-//    }
-//}
+        

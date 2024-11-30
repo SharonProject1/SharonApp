@@ -1,6 +1,7 @@
 package com.example.sharonapp.screens
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +56,7 @@ import com.example.sharonapp.utility.Checkconnection
 import com.example.sharonapp.utility.SecondApiService
 import com.example.sharonapp.utility.ServerResponse
 import com.example.sharonapp.utility.createApiService
+import com.example.sharonapp.utility.isRunningResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -68,7 +70,9 @@ class WaitingRoomClass {
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
-
+          
+            val userId = waitingRoom.userId
+          
             val focusManager = LocalFocusManager.current
             val isButtonEnabled = remember { mutableStateOf(false) }
             val isButtonOn = remember { mutableStateOf(false) }
@@ -76,55 +80,77 @@ class WaitingRoomClass {
             var startSignal by remember { mutableStateOf(false) }
             var connection by rememberSaveable { mutableStateOf(true) }
             val apiService = remember { createApiService() }
-            val apiService2 = remember { SecondApiService() }
-            var checkResponse by remember { mutableStateOf<Checkconnection?>(null) }
-
-            var pD by remember  { mutableStateOf(ServerResponse(data = listOf())) }
+            var checkResponse by remember {
+                mutableStateOf(
+                    Checkconnection(
+                        connect = "tru",
+                        needToUpdate = true,
+                        string = "서승준병신"
+                    )
+                )
+            }
+            
+            var tempsignal by remember { mutableStateOf(isRunningResponse(data = false)) }
+            var pD by remember { mutableStateOf(ServerResponse(data = listOf())) }
+            var numberOfPlayers by remember { mutableIntStateOf(7) }
             var playerData by remember { mutableStateOf(listOf<List<String>>()) }
-            var numberOfPlayers by remember { mutableIntStateOf(1) }
-            val playerNumber = remember { mutableIntStateOf(-1) }
-
+            
             LaunchedEffect(connection) {
                 if (connection) {
                     while (connection) {
                         try {
                             withContext(Dispatchers.IO) {
-                                val response = apiService.connectionCheck(waitingRoom.userId)
-                                val signal = apiService2.isRunning()
-                                checkResponse = response
-                                startSignal = signal
+                                val response = apiService.connectionCheck(idInput)
+                                val signal = apiService.isRunning(idInput)
+                                if (response.isSuccessful) {
+                                // response.body()를 통해 Checkconnection 데이터 추출
+                                checkResponse = response.body() ?: Checkconnection("false", false, "No Data")
+
+                                tempsignal = signal.body() ?: isRunningResponse(false)
+                                /*
+                                startSignal = tempsignal.runningResponse
+                                println("$startSignal 야동")
+                                */
+                            } else {
+                                // 에러 처리
+                                println("Error Response: ${response.errorBody()?.string()}")
+                            }
                             }
                         } catch (e: Exception) {
-                            connection = false
+                            println("$e 냠냠")
                         }
-                        delay(750)
+
+                        delay(500)
                     }
                 }
             }
-                LaunchedEffect(checkResponse?.NeedToUpdate) {
+
+            LaunchedEffect(checkResponse.string) {
+                if(checkResponse.needToUpdate) {
                     try {
                         pD = withContext(Dispatchers.IO) {
-                            apiService.getPlayerData(waitingRoom.userId)
+                            apiService.getPlayerData(idInput)
                         }
                         playerData = pD.data
                         numberOfPlayers = pD.pCount
                     } catch (e: Exception) {
                         val tempData = listOf(
-                            listOf("나 자신", "NaN", "false", "true", "false"),
-                            listOf("테스트용1", "1", "false", "true", "false"),
-                            listOf("테스트용2", "2", "false", "true", "false"),
-                            listOf("테스트용3", "3", "true", "true", "false"),
-                            listOf("테스트용4", "4", "false", "true", "false"),
-                            listOf("테스트용5", "5", "true", "true", "false"),
-                            listOf("테스트용6", "6", "false", "true", "false"),
-                            listOf("테스트용7", "7", "true", "true", "false"),
-                            listOf("테스트용8", "8", "false", "true", "false"),
-                            listOf("테스트용9", "9", "true", "true", "false")
-                        )
+                                  listOf("나 자신", "NaN", "false", "true", "false"),
+                                  listOf("테스트용1", "1", "false", "true", "false"),
+                                  listOf("테스트용2", "2", "false", "true", "false"),
+                                  listOf("테스트용3", "3", "true", "true", "false"),
+                                  listOf("테스트용4", "4", "false", "true", "false"),
+                                  listOf("테스트용5", "5", "true", "true", "false"),
+                                  listOf("테스트용6", "6", "false", "true", "false"),
+                                  listOf("테스트용7", "7", "true", "true", "false"),
+                                  listOf("테스트용8", "8", "false", "true", "false"),
+                                  listOf("테스트용9", "9", "true", "true", "false")
+                              )
                         playerData = tempData
                         numberOfPlayers = tempData.size
                     }
                 }
+            }
 
             Scaffold { innerPadding ->
                 Box(
@@ -164,24 +190,22 @@ class WaitingRoomClass {
                                     screenWidth = screenWidth,
                                     playerData = playerData
                                 )
-                            }
+
+                          }
                         }
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         PlayerBox(
                             size = (screenHeight * 30 / 100),
                             index = 0,
                             doesTextFieldExists = true,
-                            playerNumber = playerNumber,
                             isButtonEnabled = isButtonEnabled,
-                            isButtonOn = isButtonOn,
+                            isButtonOn = isButtonOn.value,
                             screenWidth = screenWidth,
                             playerData = playerData
                         )
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         Button(
-                            onClick =
-                            {
-                                // GET /inputNumber/:id?number=123
+                            onClick = {
                                 isButtonOn.value = !isButtonOn.value
                             },
                             enabled = isButtonEnabled.value,
@@ -197,157 +221,181 @@ class WaitingRoomClass {
             }
 
             val isFirstLaunch = remember { mutableStateOf(true) }
-            LaunchedEffect(startSignal) {
-                if(isFirstLaunch.value) {
+            LaunchedEffect(tempsignal.data) {
+                startSignal = tempsignal.data
+                println("$startSignal 야동")
+                if(isFirstLaunch.value)
+                {
                     isFirstLaunch.value = false
-                } else {
-                    onNavigateToCountdown()
                 }
-
-            }
-            LaunchedEffect(isButtonOn.value) {
-                if (isButtonOn.value) {
-                    withContext(Dispatchers.IO)
-                    {
-                        apiService2.sendReady(playerData[0][0])
-                        apiService.getInputNumber(
-                            nickname = playerData[0][0],
-                            number = playerNumber.intValue
-                        )
-                    }
-                } else {
-                    withContext(Dispatchers.IO)
-                    {
-                        apiService2.sendNotReady(playerData[0][0])
-                    }
+                else
+                {
+                    if(startSignal) {nextScreen()}
                 }
             }
+            return idInput
         }
+    }
+}
 
-        @Composable
-        fun PlayerBox(
-            size: Int,
-            index: Int,
-            doesTextFieldExists: Boolean = false,
-            playerNumber: MutableState<Int> = mutableIntStateOf(-1),
-            isButtonEnabled: MutableState<Boolean> = mutableStateOf(false),
-            isButtonOn: MutableState<Boolean> = mutableStateOf(false),
-            screenWidth: Int, playerData: List<List<String>>
+@Composable
+fun PlayerBox(
+    size: Int,
+    index: Int,
+    doesTextFieldExists: Boolean = false,
+    isButtonEnabled: MutableState<Boolean> = mutableStateOf(false),
+    isButtonOn: Boolean = true,
+    screenWidth: Int, playerData: List<List<String>>
+) {
+    if (playerData.isEmpty() || index >= playerData.size) {
+        Text(text = "Loading...", fontSize = 16.sp) // 안전한 기본 UI
+        return
+    }
+    var textState by remember { mutableStateOf("") }
+    var figureColor = Red
+    val isReady = playerData[index][2]
+    val apiService = remember { createApiService() }
+    val apiService2 = remember { SecondApiService() }
+    var isInitialized by remember { mutableStateOf(false) }
+
+    if (isReady == "true")
+        figureColor = Green
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape((screenWidth * 5 / 100).dp))
+            .background(color = Color.DarkGray)
+            .size(size.dp)
+            .aspectRatio(1f)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .padding(top = (screenWidth * 2 / 100).dp, bottom = (screenWidth * 2 / 100).dp)
+                .fillMaxSize()
         ) {
-            if (playerData.isEmpty() || index >= playerData.size) {
-                Text(text = "Loading...", fontSize = 16.sp)
-                return
-            }
-
-            var textState by remember { mutableStateOf("") }
-            var figureColor = Red
-            val isReady = playerData[index][2]
-            if (isReady == "true")
-                figureColor = Green
-
+            Text(
+                text = playerData[index][0],
+                fontSize = (size / 6).sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(color = Color.DarkGray)
-                    .size(size.dp)
                     .aspectRatio(1f)
+                    .weight(1f)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .padding(top = (screenWidth * 2/100).dp, bottom = (screenWidth * 2/100).dp)
-                        .fillMaxSize()
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Text(
-                        text = playerData[index][0],
-                        fontSize = (size/6).sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(figureColor)
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .fillMaxSize()
                     )
                     Box(
                         modifier = Modifier
+                            .clip(RoundedCornerShape((size * 64 / 30).dp, (size * 64 / 30).dp))
+                            .background(figureColor)
+                            .weight(2f)
                             .aspectRatio(1f)
-                            .weight(1f)
+                            .fillMaxSize()
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(figureColor)
-                                    .weight(1f)
-                                    .aspectRatio(1f)
-                                    .fillMaxSize()
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape((size * 64/30).dp, (size * 64/30).dp))
-                                    .background(figureColor)
-                                    .weight(2f)
-                                    .aspectRatio(1f)
-                                    .fillMaxSize()
-                            ) {
-                                if (doesTextFieldExists) {
-                                    TextField(
-                                        value = textState,
-                                        textStyle = TextStyle(
-                                            fontSize = (size/6).sp,
-                                            lineHeight = (size/4).sp,
-                                            color = White,
-                                            textAlign = TextAlign.Center
-                                        ),
-                                        onValueChange = {
-                                            val isDupilcated = playerData.drop(1).any { player -> it == player[1]}
-
-                                            if (it.all { it.isDigit() } && it.length <= 3) {
-                                                textState = it
-                                                playerNumber.value = textState.toInt()
-                                                isButtonEnabled.value = it.isNotEmpty() && !isDupilcated
-                                            }
-                                        },
-                                        placeholder = {
-                                            Text(
-                                                text = "번호 입력",
-                                                fontSize = (size * 8/100).sp,
-                                                lineHeight = (size/4).sp,
-                                                textAlign = TextAlign.Center,
-                                                modifier = Modifier
-                                                    .align(Alignment.Center)
-                                                    .fillMaxWidth()
-                                            )
-                                        },
-                                        colors = TextFieldDefaults.colors(
-                                            focusedTextColor = White,
-                                            unfocusedTextColor = Color.LightGray,
-                                            disabledTextColor = Color.Gray,
-                                            focusedContainerColor = Color(0x00000000),
-                                            unfocusedContainerColor = Color(0x00000000),
-                                            disabledContainerColor = Color(0x00000000),
-                                            focusedIndicatorColor = Color(0x00000000),
-                                            unfocusedIndicatorColor = Color(0x00000000),
-                                            disabledIndicatorColor = Color(0x00000000),
-                                            cursorColor = White
-                                        ),
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                        enabled = !isButtonOn.value,
+                        if (doesTextFieldExists) {
+                            TextField(
+                                value = textState,
+                                textStyle = TextStyle(
+                                    fontSize = (size / 6).sp,
+                                    lineHeight = (size / 4).sp,
+                                    color = White,
+                                    textAlign = TextAlign.Center
+                                ),
+                                onValueChange = {
+                                    if (it.all { it.isDigit() } && it.length <= 3) {
+                                        textState = it
+                                        isButtonEnabled.value = it.isNotEmpty()
+                                    }
+                                },
+                                placeholder = {
+                                    Text(
+                                        text = "번호 입력",
+                                        fontSize = (size * 8 / 100).sp,
+                                        lineHeight = (size / 4).sp,
+                                        textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .align(Alignment.Center)
                                             .fillMaxWidth()
                                     )
-                                } else {
-                                    Text(
-                                        text = playerData[index][1],
-                                        fontSize = (size/6).sp,
-                                        modifier = Modifier.align(Alignment.Center)
-                                    )
-                                }
-                            }
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = White,
+                                    unfocusedTextColor = Color.LightGray,
+                                    disabledTextColor = Color.Gray,
+                                    focusedContainerColor = Color(0x00000000),
+                                    unfocusedContainerColor = Color(0x00000000),
+                                    disabledContainerColor = Color(0x00000000),
+                                    focusedIndicatorColor = Color(0x00000000),
+                                    unfocusedIndicatorColor = Color(0x00000000),
+                                    disabledIndicatorColor = Color(0x00000000),
+                                    cursorColor = White
+                                ),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                enabled = !isButtonOn,
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .fillMaxWidth()
+                            )
+                        } else {
+                            Text(
+                                text = playerData[index][1],
+                                fontSize = (size / 6).sp,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
                         }
                     }
                 }
             }
         }
+        LaunchedEffect(isButtonOn) {
+            if (isInitialized)
+            {
+            if (isButtonOn) {
+                withContext(Dispatchers.IO) {
+                    try {
+
+                        val response = apiService.getInputNumber(nickname = playerData[0][0], number = textState.toInt() )
+                        val response2 = apiService.sendReady(playerData[0][0]) // 준비 완료 전송
+
+                        if (response.isSuccessful) {
+                            Log.d("Server Response", response.body()?.string ?: "Empty Response")
+                        } else {
+                            Log.e("Error Response", response.errorBody()?.string() ?: "No Error Body")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("Network Error", e.message ?: "Unknown Error")
+                    }
+
+                }
+            }
+            else {
+                withContext(Dispatchers.IO) {
+                    try {
+                        apiService.sendNotReady(playerData[0][0]) // 준비 취소 전송
+                    } catch (e: Exception) {
+                        println("Error: ${e.message}")
+                    }
+                }
+            }
+            }
+            else
+            {
+                isInitialized = true
+            }
+        }
+
     }
 }

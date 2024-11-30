@@ -94,7 +94,6 @@ class GameResultClass {
                             fontSize = (screenWidth * 10/100).sp,
                             color = MaterialTheme.colorScheme.primary
                         )
-
                         Spacer(modifier = Modifier.weight(1f))
 
                         HorizontalPager(
@@ -189,7 +188,6 @@ class GameResultClass {
                                 }
                             }
                         }
-
                         Spacer(modifier = Modifier.weight(1f))
 
                         Button(

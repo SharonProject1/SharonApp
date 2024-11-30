@@ -31,8 +31,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             var userId by remember { mutableStateOf("") }
 
-            SharonAppTheme {
-
+            SharonTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = Countdown) {
                     composable<Start> {
