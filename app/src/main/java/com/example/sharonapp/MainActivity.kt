@@ -4,21 +4,23 @@ import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.example.sharonapp.screens.CountdownClass
 import com.example.sharonapp.screens.HomeClass
 import com.example.sharonapp.screens.InGameClass
 import com.example.sharonapp.screens.GameResultClass
 import com.example.sharonapp.screens.StartClass
-import com.example.sharonapp.screens.TerminationClass
 import com.example.sharonapp.screens.WaitingRoomClass
-import com.example.sharonapp.ui.theme.SharonTheme
+import com.example.sharonapp.ui.theme.SharonAppTheme
+import kotlinx.serialization.Serializable
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,61 +29,86 @@ class MainActivity : ComponentActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         setContent {
-            var idInput by remember { mutableStateOf("") }
-
-            val configuration = LocalConfiguration.current
+            var userId by remember { mutableStateOf("") }
 
             SharonTheme {
-
-                var currentScreen by remember { mutableStateOf("StartScreen") }
-                // Nav 기능으로 화면 전환하자
-
-                when (currentScreen) {
-                    "StartScreen" -> StartClass.StartScreen(
-                        configuration = configuration,
-                        nextScreen = {
-                            currentScreen = "HomeScreen"
-                        }
-                    )
-                    "HomeScreen" -> idInput = HomeClass.HomeScreen(
-                        configuration = configuration,
-                        nextScreen = {
-                            currentScreen = "WaitingRoomScreen"
-                        }
-                    )
-                    "WaitingRoomScreen" -> idInput = WaitingRoomClass.WaitingRoomScreen(
-idInput,
-                        configuration = configuration,
-                        nextScreen = {
-                            currentScreen = "CountdownScreen"
-                        }
-                    )
-                    "CountdownScreen" -> idInput = CountdownClass.CountdownScreen(idInput,
-                        configuration = configuration,
-                        nextScreen = {
-                            currentScreen = "InGameScreen"
-                        }
-                    )
-                    "InGameScreen" -> InGameClass.InGameScreen(idInput,
-                        configuration = configuration,
-                        nextScreen = {
-                            currentScreen = "TerminationScreen"
-                        }
-                    )
-                    "TerminationScreen" -> TerminationClass.TerminationScreen(
-                        configuration = configuration,
-                        nextScreen = {
-                            currentScreen = "ResultScreen"
-                        }
-                    )
-                    "ResultScreen" -> GameResultClass.ResultScreen(
-                        configuration = configuration,
-                        nextScreen = {
-                            currentScreen = "StartScreen"
-                        }
-                    )
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = Countdown) {
+                    composable<Start> {
+                        StartClass.StartScreen(
+                            onNavigateToHome = {
+                                navController.navigate(route = Home)
+                            }
+                        )
+                    }
+                    composable<Home> {
+                        HomeClass.HomeScreen(
+                            onNavigateToWaitingRoom = { idInput ->
+                                userId = idInput
+                                navController.navigate(
+                                    route = WaitingRoom(userId = userId)
+                                )
+                            }
+                        )
+                    }
+                    composable<WaitingRoom> { navBackStackEntry ->
+                        val waitingRoom: WaitingRoom = navBackStackEntry.toRoute()
+                        WaitingRoomClass.WaitingRoomScreen(
+                            waitingRoom = waitingRoom,
+                            onNavigateToCountdown = {
+                                navController.navigate(route = Countdown)
+                            }
+                        )
+                    }
+                    composable<Countdown> {
+                        CountdownClass.CountdownScreen(
+                            onNavigateToInGame = {
+                                navController.navigate(
+                                    route = InGame(userId = userId)
+                                )
+                            }
+                        )
+                    }
+                    composable<InGame> { navBackStackEntry ->
+                        val inGame: InGame = navBackStackEntry.toRoute()
+                        InGameClass.InGameScreen(
+                            inGame = inGame,
+                            onNavigateToGameResult = {
+                                navController.navigate(
+                                    route = GameResult(userId = userId)
+                                )
+                            }
+                        )
+                    }
+                    composable<GameResult> { navBackStackEntry ->
+                        val gameResult: GameResult = navBackStackEntry.toRoute()
+                        GameResultClass.GameResultScreen(
+                            gameResult = gameResult,
+                            onNavigateToHome = {
+                                navController.navigate(route = Home)
+                            }
+                        )
+                    }
                 }
             }
         }
     }
 }
+
+@Serializable
+object Start
+
+@Serializable
+object Home
+
+@Serializable
+data class WaitingRoom(val userId: String)
+
+@Serializable
+object Countdown
+
+@Serializable
+data class InGame(val userId: String)
+
+@Serializable
+data class GameResult(val userId: String)

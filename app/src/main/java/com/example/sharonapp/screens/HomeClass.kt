@@ -25,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,15 +40,17 @@ class HomeClass {
     companion object {
 
         @Composable
-        fun HomeScreen(configuration: Configuration, nextScreen: () -> Unit): String {
-            val screenWidth = configuration.screenWidthDp
-            val screenHeight = configuration.screenHeightDp
+        fun HomeScreen(
+            onNavigateToWaitingRoom: (idInput: String) -> Unit
+        ) {
+            val screenWidth: Int = LocalConfiguration.current.screenWidthDp
+            val screenHeight: Int = LocalConfiguration.current.screenHeightDp
+
             var codeInput by remember { mutableStateOf("") }
 
             val coroutineScope = rememberCoroutineScope()
             val apiService2 = remember { SecondApiService() }
             var idInput by remember { mutableStateOf("") }
-
 
             Scaffold { innerPadding ->
                 Box(
@@ -97,13 +100,13 @@ class HomeClass {
                                         withContext(Dispatchers.IO) {
                                             apiService2.submitNickname(idInput)
                                         }
-                                        nextScreen()
+                                        onNavigateToWaitingRoom(idInput)
                                     } catch (e: Exception) {
                                         // 에러만 처리
-                                        nextScreen()
+                                        onNavigateToWaitingRoom(idInput)
                                     }
                                 }
-                                      },
+                            },
 
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
@@ -116,7 +119,6 @@ class HomeClass {
                     }
                 }
             }
-            return idInput
         }
     }
 }

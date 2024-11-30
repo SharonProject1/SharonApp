@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,28 +27,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sharonapp.GameResult
 import com.example.sharonapp.R
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Red
+import com.example.sharonapp.ui.theme.SharonAppTheme
 
-// 완성
 class GameResultClass {
     companion object {
 
         @OptIn(ExperimentalFoundationApi::class)
         @Composable
-        fun ResultScreen(configuration: Configuration, nextScreen: () -> Unit) {
-            val screenWidth: Int = configuration.screenWidthDp
-            val screenHeight: Int = configuration.screenHeightDp
+        fun GameResultScreen(
+            gameResult: GameResult? = null,
+            onNavigateToHome: () -> Unit
+        ) {
+            val screenWidth: Int = LocalConfiguration.current.screenWidthDp
+            val screenHeight: Int = LocalConfiguration.current.screenHeightDp
 
-            val gameResult: List<List<String>> //json으로 받아온 데이터
+            val gameResultData: List<List<String>> //json으로 받아온 데이터
 
 /* data format
 [
-    [playerState, rank, playerNumer, playerId, playTime],
+    [playerState, rank, playerNumber, playerId, playTime],
     [playerState, ...],
     ...
 ]
@@ -62,9 +69,9 @@ class GameResultClass {
                 listOf("연결 끊김", "-", "39", "돌쇠", "-"),
             )
 
-            gameResult = testResult
+            gameResultData = testResult
 
-            val pagerState = rememberPagerState(pageCount = { gameResult.size })
+            val pagerState = rememberPagerState(pageCount = { gameResultData.size })
 
             Scaffold { innerPadding ->
                 Box(
@@ -74,41 +81,61 @@ class GameResultClass {
                         .padding(innerPadding)
                 ) {
                     Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .padding(16.dp)
                     ) {
-                        Spacer(modifier = Modifier.height((screenHeight * 5/100).dp))
+                        Spacer(modifier = Modifier.weight(1f))
 
                         Text(
                             text = "게임 결과",
                             fontSize = (screenWidth * 10/100).sp,
                             color = MaterialTheme.colorScheme.primary
                         )
+                        Spacer(modifier = Modifier.weight(1f))
 
-                        Spacer(modifier = Modifier.height((screenHeight * 10/100).dp))
-
-                        HorizontalPager(state = pagerState) { page ->
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier
+//                                .aspectRatio(0.75f)
+                        ) { page ->
                             Column(
                                 verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.fillMaxWidth()
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                val colorOfPlayerStateText: Color
-                                val playerStateText: String = gameResult[page][0]
-
-                                if(playerStateText == "생존")
-                                    colorOfPlayerStateText = Green
-                                else
-                                    colorOfPlayerStateText = Red
-
-                                Text(
-                                    text = playerStateText,
-                                    fontSize = (screenWidth * 10/100).sp,
-                                    color = colorOfPlayerStateText
-                                )
-                                Spacer(modifier = Modifier.height((screenWidth * 5/100).dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        if(page > 0) {
+                                            Text(
+                                                text = "<",
+                                                fontSize = (screenWidth * 10/100).sp
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.weight(1f))
+                                    }
+                                    Text(
+                                        text = gameResultData[page][0],
+                                        fontSize = (screenWidth * 10/100).sp,
+                                        color = if(gameResultData[page][0] == "생존") Green else Red
+                                    )
+                                    Row(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        if (page < gameResultData.size-1) {
+                                            Text(
+                                                text = ">",
+                                                fontSize = (screenWidth * 10 / 100).sp
+                                            )
+                                        }
+                                    }
+                                }
                                 Box {
                                     Image(
                                         painter = painterResource(id = R.drawable.test_image),
@@ -120,11 +147,11 @@ class GameResultClass {
                                         modifier = Modifier.align(Alignment.Center)
                                     ) {
                                         Text(
-                                            text = gameResult[page][3],
+                                            text = gameResultData[page][3],
                                             fontSize = (screenWidth * 7/100).sp
                                         )
                                         Text(
-                                            text = gameResult[page][2],
+                                            text = gameResultData[page][2],
                                             fontSize = (screenWidth * 20/100).sp
                                         )
                                     }
@@ -140,7 +167,7 @@ class GameResultClass {
                                         verticalArrangement = Arrangement.Center
                                     ) {
                                         Text(
-                                            text = gameResult[page][1],
+                                            text = gameResultData[page][1],
                                             fontSize = (screenWidth * 10/100).sp,
                                             lineHeight = (screenHeight * 8/100).sp
                                         )
@@ -152,7 +179,7 @@ class GameResultClass {
                                         verticalArrangement = Arrangement.Center
                                     ) {
                                         Text(
-                                            text = gameResult[page][4],
+                                            text = gameResultData[page][4],
                                             fontSize = (screenWidth * 10/100).sp,
                                             lineHeight = (screenHeight * 8/100).sp
                                         )
@@ -161,9 +188,10 @@ class GameResultClass {
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.height((screenHeight * 5/100).dp))
+                        Spacer(modifier = Modifier.weight(1f))
+
                         Button(
-                            onClick = {nextScreen()},
+                            onClick = { onNavigateToHome() },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -172,9 +200,19 @@ class GameResultClass {
                         ) {
                             Text("홈으로 돌아가기")
                         }
+
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ResultScreenPreview() {
+    SharonAppTheme {
+        GameResultClass.GameResultScreen(onNavigateToHome = {})
     }
 }

@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sharonapp.WaitingRoom
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Red
 import com.example.sharonapp.ui.theme.White
@@ -59,34 +61,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-
-val testData = listOf(
-    listOf("나 자신", "NaN", "true", "true", "false"),
-    listOf("테스트용1", "1", "false", "true", "false"),
-    listOf("테스트용2", "2", "false", "true", "false"),
-    listOf("테스트용3", "3", "true", "true", "false"),
-    listOf("테스트용4", "4", "false", "true", "false"),
-    listOf("테스트용5", "5", "true", "true", "false"),
-    listOf("테스트용6", "6", "false", "true", "false"),
-    listOf("테스트용7", "7", "true", "true", "false"),
-    listOf("테스트용8", "8", "false", "true", "false"),
-    listOf("테스트용9", "9", "true", "true", "false")
-)
 class WaitingRoomClass {
     companion object {
         @Composable
         fun WaitingRoomScreen(
-            idInput: String,
-            configuration: Configuration,
-            nextScreen: () -> Unit
-        ): String {
-            val screenWidth = configuration.screenWidthDp
-            val screenHeight = configuration.screenHeightDp
-
+            waitingRoom: WaitingRoom,
+            onNavigateToCountdown: () -> Unit
+        ) {
+            val screenWidth: Int = LocalConfiguration.current.screenWidthDp
+            val screenHeight: Int = LocalConfiguration.current.screenHeightDp
+          
+            val userId = waitingRoom.userId
+          
             val focusManager = LocalFocusManager.current
             val isButtonEnabled = remember { mutableStateOf(false) }
             val isButtonOn = remember { mutableStateOf(false) }
-
 
             var startSignal by remember { mutableStateOf(false) }
             var connection by rememberSaveable { mutableStateOf(true) }
@@ -100,10 +89,12 @@ class WaitingRoomClass {
                     )
                 )
             }
+            
             var tempsignal by remember { mutableStateOf(isRunningResponse(data = false)) }
             var pD by remember { mutableStateOf(ServerResponse(data = listOf())) }
             var numberOfPlayers by remember { mutableIntStateOf(7) }
             var playerData by remember { mutableStateOf(listOf<List<String>>()) }
+            
             LaunchedEffect(connection) {
                 if (connection) {
                     while (connection) {
@@ -116,9 +107,10 @@ class WaitingRoomClass {
                                 checkResponse = response.body() ?: Checkconnection("false", false, "No Data")
 
                                 tempsignal = signal.body() ?: isRunningResponse(false)
-/*
+                                /*
                                 startSignal = tempsignal.runningResponse
-                                println("$startSignal 야동")*/
+                                println("$startSignal 야동")
+                                */
                             } else {
                                 // 에러 처리
                                 println("Error Response: ${response.errorBody()?.string()}")
@@ -134,19 +126,30 @@ class WaitingRoomClass {
             }
 
             LaunchedEffect(checkResponse.string) {
-                if(checkResponse.needToUpdate)
-                {
-                try {
-                    pD = withContext(Dispatchers.IO) {
-                        apiService.getPlayerData(idInput)
+                if(checkResponse.needToUpdate) {
+                    try {
+                        pD = withContext(Dispatchers.IO) {
+                            apiService.getPlayerData(idInput)
+                        }
+                        playerData = pD.data
+                        numberOfPlayers = pD.pCount
+                    } catch (e: Exception) {
+                        val tempData = listOf(
+                                  listOf("나 자신", "NaN", "false", "true", "false"),
+                                  listOf("테스트용1", "1", "false", "true", "false"),
+                                  listOf("테스트용2", "2", "false", "true", "false"),
+                                  listOf("테스트용3", "3", "true", "true", "false"),
+                                  listOf("테스트용4", "4", "false", "true", "false"),
+                                  listOf("테스트용5", "5", "true", "true", "false"),
+                                  listOf("테스트용6", "6", "false", "true", "false"),
+                                  listOf("테스트용7", "7", "true", "true", "false"),
+                                  listOf("테스트용8", "8", "false", "true", "false"),
+                                  listOf("테스트용9", "9", "true", "true", "false")
+                              )
+                        playerData = tempData
+                        numberOfPlayers = tempData.size
                     }
-                    playerData = pD.data
-                    numberOfPlayers = pD.pCount
-                } catch (e: Exception) {
-                    playerData = testData
-                    numberOfPlayers = testData.size
                 }
-            }
             }
 
             Scaffold { innerPadding ->
@@ -187,7 +190,8 @@ class WaitingRoomClass {
                                     screenWidth = screenWidth,
                                     playerData = playerData
                                 )
-                                }
+
+                          }
                         }
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         PlayerBox(
@@ -201,8 +205,7 @@ class WaitingRoomClass {
                         )
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         Button(
-                            onClick =
-                            {
+                            onClick = {
                                 isButtonOn.value = !isButtonOn.value
                             },
                             enabled = isButtonEnabled.value,
