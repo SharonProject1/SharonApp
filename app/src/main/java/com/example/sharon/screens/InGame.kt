@@ -1,5 +1,10 @@
 package com.example.sharon.screens
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +20,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -25,18 +33,49 @@ import com.example.sharon.ui.theme.Green
 import com.example.sharon.ui.theme.Yellow
 import com.example.sharon.ui.theme.Red
 import com.example.sharon.ui.theme.SharonTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 // 완성
 class InGame {
     companion object {
         @Composable
-        fun InGameScreen(configuration: Configuration, gameState: List<Int> = listOf(180, 10, 10), nextScreen: () -> Unit) {
+        fun InGameScreen(configuration: Configuration, nextScreen: () -> Unit) {
             val screenWidth: Int = configuration.screenWidthDp
             val screenHeight: Int = configuration.screenHeightDp
 
-            val timeLeft: Int = gameState[0]
-            val numberOfPlayers: Int = gameState[1]
-            val numberOfAlivePlayers: Int = gameState[2]
+            val apiService = remember { createApiService() }
+            var checkResponse by remember {
+                mutableStateOf(Checkconnection(connect = "tru", needToUpdate = true, string = "서승준병신"))
+            }
+            var gameState by remember { mutableStateOf(GameState(data = listOf())) }
+
+
+            var timeLeft by remember { mutableStateOf(1) }
+            var numberOfAlivePlayers by remember { mutableStateOf(1) }
+            var numberOfPlayers by remember { mutableStateOf(1) }
+            LaunchedEffect(Unit) {
+                while(true)
+                {
+                    try {
+                        withContext(Dispatchers.IO)
+                        {
+                            var getstate = apiService.getGameState()
+                            gameState = getstate
+                        }
+                        timeLeft = gameState.data[8].toInt()
+                        numberOfAlivePlayers = gameState.data[6].toInt()
+                        numberOfPlayers = gameState.data[5].toInt()
+                        delay(100)
+                    }
+                    catch (e: Exception)
+                    {
+                        println("도비")
+                    }
+
+                }
+            }
 
             Scaffold { innerPadding ->
                 Box(

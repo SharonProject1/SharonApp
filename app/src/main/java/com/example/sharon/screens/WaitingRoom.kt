@@ -1,6 +1,7 @@
 package com.example.sharon.screens
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +35,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +57,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
+
 val testData = listOf(
     listOf("나 자신", "NaN", "true", "true", "false"),
     listOf("테스트용1", "1", "false", "true", "false"),
@@ -72,7 +73,11 @@ val testData = listOf(
 class WaitingRoom {
     companion object {
         @Composable
-        fun WaitingRoomScreen(idInput: String, configuration: Configuration, nextScreen: () -> Unit) {
+        fun WaitingRoomScreen(
+            idInput: String,
+            configuration: Configuration,
+            nextScreen: () -> Unit
+        ) {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
 
@@ -84,42 +89,63 @@ class WaitingRoom {
             var startSignal by remember { mutableStateOf(false) }
             var connection by rememberSaveable { mutableStateOf(true) }
             val apiService = remember { createApiService() }
-            val apiService2 = remember { SecondApiService() }
-            var checkResponse by remember { mutableStateOf<Checkconnection?>(null) } // 상태로 관찰 가능하게 설정
-            var pD by remember  { mutableStateOf(ServerResponse(data = listOf())) }
-            var numberOfPlayers by remember { mutableIntStateOf(1) }
-            var playerData by remember  { mutableStateOf(listOf<List<String>>()) }
-            pD.data = testData
-            numberOfPlayers = pD.pCount
+            var checkResponse by remember {
+                mutableStateOf(
+                    Checkconnection(
+                        connect = "tru",
+                        needToUpdate = true,
+                        string = "서승준병신"
+                    )
+                )
+            }
+            var tempsignal by remember { mutableStateOf(isRunningResponse(data = false)) }
+            var pD by remember { mutableStateOf(ServerResponse(data = listOf())) }
+            var numberOfPlayers by remember { mutableIntStateOf(7) }
+            var playerData by remember { mutableStateOf(listOf<List<String>>()) }
             LaunchedEffect(connection) {
                 if (connection) {
                     while (connection) {
                         try {
                             withContext(Dispatchers.IO) {
                                 val response = apiService.connectionCheck(idInput)
-                                val signal = apiService2.isRunning()
-                                checkResponse = response
-                                startSignal = signal
+                                val signal = apiService.isRunning(idInput)
+                                if (response.isSuccessful) {
+                                // response.body()를 통해 Checkconnection 데이터 추출
+                                checkResponse = response.body() ?: Checkconnection("false", false, "No Data")
+
+                                tempsignal = signal.body() ?: isRunningResponse(false)
+/*
+                                startSignal = tempsignal.runningResponse
+                                println("$startSignal 야동")*/
+                            } else {
+                                // 에러 처리
+                                println("Error Response: ${response.errorBody()?.string()}")
+                            }
                             }
                         } catch (e: Exception) {
-                            connection = false
+                            println("$e 냠냠")
                         }
-                        delay(750)
+
+                        delay(500)
                     }
                 }
             }
-                LaunchedEffect(checkResponse?.NeedToUpdate) {
-                    try {
-                        pD = withContext(Dispatchers.IO) {
-                            apiService.getPlayerData(idInput)
-                        }
-                        playerData = pD.data
-                        numberOfPlayers = pD.pCount
-                    } catch (e: Exception) {
-                        playerData = testData
-                        numberOfPlayers = testData.size
+
+            LaunchedEffect(checkResponse.string) {
+                if(checkResponse.needToUpdate)
+                {
+                try {
+                    pD = withContext(Dispatchers.IO) {
+                        apiService.getPlayerData(idInput)
                     }
+                    playerData = pD.data
+                    numberOfPlayers = pD.pCount
+                } catch (e: Exception) {
+                    playerData = testData
+                    numberOfPlayers = testData.size
                 }
+            }
+            }
 
             Scaffold { innerPadding ->
                 Box(
@@ -167,7 +193,7 @@ class WaitingRoom {
                             index = 0,
                             doesTextFieldExists = true,
                             isButtonEnabled = isButtonEnabled,
-                            isButtonOn = isButtonOn,
+                            isButtonOn = isButtonOn.value,
                             screenWidth = screenWidth,
                             playerData = playerData
                         )
@@ -190,16 +216,17 @@ class WaitingRoom {
             }
 
             val isFirstLaunch = remember { mutableStateOf(true) }
-            LaunchedEffect(startSignal) {
+            LaunchedEffect(tempsignal.data) {
+                startSignal = tempsignal.data
+                println("$startSignal 야동")
                 if(isFirstLaunch.value)
                 {
                     isFirstLaunch.value = false
                 }
                 else
                 {
-                    nextScreen()
+                    if(startSignal) {nextScreen()}
                 }
-
             }
         }
     }
@@ -211,7 +238,7 @@ fun PlayerBox(
     index: Int,
     doesTextFieldExists: Boolean = false,
     isButtonEnabled: MutableState<Boolean> = mutableStateOf(false),
-    isButtonOn: MutableState<Boolean> = mutableStateOf(false),
+    isButtonOn: Boolean = true,
     screenWidth: Int, playerData: List<List<String>>
 ) {
     if (playerData.isEmpty() || index >= playerData.size) {
@@ -223,6 +250,8 @@ fun PlayerBox(
     val isReady = playerData[index][2]
     val apiService = remember { createApiService() }
     val apiService2 = remember { SecondApiService() }
+    var isInitialized by remember { mutableStateOf(false) }
+
     if (isReady == "true")
         figureColor = Green
 
@@ -309,7 +338,7 @@ fun PlayerBox(
                                     cursorColor = White
                                 ),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                enabled = !isButtonOn.value,
+                                enabled = !isButtonOn,
                                 modifier = Modifier
                                     .align(Alignment.Center)
                                     .fillMaxWidth()
@@ -325,23 +354,43 @@ fun PlayerBox(
                 }
             }
         }
-        LaunchedEffect(isButtonOn.value) {
-            if (isButtonOn.value) {
-                withContext(Dispatchers.IO)
-                {
-                    apiService2.sendReady(playerData[0][0])
-                    apiService.getInputNumber(
-                        nickname = playerData[0][0],
-                        number = textState.toInt()
-                    )
-                }
-            } else {
-                withContext(Dispatchers.IO)
-                {
-                    apiService2.sendNotReady(playerData[0][0])
+        LaunchedEffect(isButtonOn) {
+            if (isInitialized)
+            {
+            if (isButtonOn) {
+                withContext(Dispatchers.IO) {
+                    try {
+
+                        val response = apiService.getInputNumber(nickname = playerData[0][0], number = textState.toInt() )
+                        val response2 = apiService.sendReady(playerData[0][0]) // 준비 완료 전송
+
+                        if (response.isSuccessful) {
+                            Log.d("Server Response", response.body()?.string ?: "Empty Response")
+                        } else {
+                            Log.e("Error Response", response.errorBody()?.string() ?: "No Error Body")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("Network Error", e.message ?: "Unknown Error")
+                    }
+
                 }
             }
+            else {
+                withContext(Dispatchers.IO) {
+                    try {
+                        apiService.sendNotReady(playerData[0][0]) // 준비 취소 전송
+                    } catch (e: Exception) {
+                        println("Error: ${e.message}")
+                    }
+                }
+            }
+            }
+            else
+            {
+                isInitialized = true
+            }
         }
+
     }
 }
 /*

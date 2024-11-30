@@ -103,7 +103,6 @@ class Home {
                                         nextScreen()
                                     } catch (e: Exception) {
                                         // 에러만 처리
-                                        println("Error: ${e.message}")
                                         nextScreen()
                                     }
                                 }
