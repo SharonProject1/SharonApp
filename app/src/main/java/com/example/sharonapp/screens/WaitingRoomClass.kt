@@ -66,7 +66,7 @@ class WaitingRoomClass {
         @Composable
         fun WaitingRoomScreen(
             waitingRoom: WaitingRoom,
-            onNavigateToCountdown: () -> Unit
+            onNavigateToCountdown: (userId: String) -> Unit
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
@@ -100,8 +100,8 @@ class WaitingRoomClass {
                     while (connection) {
                         try {
                             withContext(Dispatchers.IO) {
-                                val response = apiService.connectionCheck(idInput)
-                                val signal = apiService.isRunning(idInput)
+                                val response = apiService.connectionCheck(userId)
+                                val signal = apiService.isRunning(userId)
                                 if (response.isSuccessful) {
                                 // response.body()를 통해 Checkconnection 데이터 추출
                                 checkResponse = response.body() ?: Checkconnection("false", false, "No Data")
@@ -129,7 +129,7 @@ class WaitingRoomClass {
                 if(checkResponse.needToUpdate) {
                     try {
                         pD = withContext(Dispatchers.IO) {
-                            apiService.getPlayerData(idInput)
+                            apiService.getPlayerData(userId)
                         }
                         playerData = pD.data
                         numberOfPlayers = pD.pCount
@@ -224,16 +224,13 @@ class WaitingRoomClass {
             LaunchedEffect(tempsignal.data) {
                 startSignal = tempsignal.data
                 println("$startSignal 야동")
-                if(isFirstLaunch.value)
-                {
+                if(isFirstLaunch.value) {
                     isFirstLaunch.value = false
                 }
-                else
-                {
-                    if(startSignal) {nextScreen()}
+                else if(startSignal) {
+                     onNavigateToCountdown(userId)
                 }
             }
-            return idInput
         }
     }
 }

@@ -37,14 +37,14 @@ class CountdownClass {
 
             LaunchedEffect(Unit) {
                 while (count >= 0) {
-                    if(count == 4) delay(3000)
+                    if (count == 4) delay(3000)
                     else delay(1000)
                     count--
                 }
                 onNavigateToInGame()
             }
 
-            val displayText = if(count in 1..3) "$count" else "시작"
+            val displayText = if (count in 1..3) "$count" else "시작"
 
             Scaffold { innerPadding ->
                 Box(
@@ -65,22 +65,22 @@ class CountdownClass {
                                 .fillMaxSize()
                                 .padding(8.dp)
                         ) {
-                            if(count == 4) {
+                            if (count == 4) {
                                 Text(
                                     text = "이제 게임이 시작됩니다...",
                                     fontSize = (screenWidth * 7 / 100).sp,
                                     color = MaterialTheme.colorScheme.onBackground
                                 )
-                                Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
+                                Spacer(modifier = Modifier.height((screenHeight * 2 / 100).dp))
                                 Text(
                                     text = "출발선에 서 주십시오.",
-                                    fontSize = (screenWidth * 7/100).sp,
+                                    fontSize = (screenWidth * 7 / 100).sp,
                                     color = MaterialTheme.colorScheme.onBackground
                                 )
                             } else {
                                 Text(
                                     text = displayText,
-                                    fontSize = (screenWidth * 3*(5 - count) / 100).sp,
+                                    fontSize = (screenWidth * 3 * (5 - count) / 100).sp,
                                     color = MaterialTheme.colorScheme.onBackground
                                 )
                             }
@@ -88,4 +88,6 @@ class CountdownClass {
                     }
                 }
             }
-        
+        }
+    }
+}

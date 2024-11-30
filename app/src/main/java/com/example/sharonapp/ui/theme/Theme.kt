@@ -16,7 +16,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun SharonTheme(
+fun SharonAppTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(

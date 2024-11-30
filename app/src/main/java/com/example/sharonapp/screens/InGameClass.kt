@@ -8,7 +8,6 @@ import android.content.res.Configuration
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.res.Configuration
 import android.graphics.Paint.Align
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -20,42 +19,64 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import com.example.sharonapp.InGame
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Yellow
 import com.example.sharonapp.ui.theme.Red
+import com.example.sharonapp.ui.theme.SharonAppTheme
 import com.example.sharonapp.utility.Checkconnection
 import com.example.sharonapp.utility.GameState
 import com.example.sharonapp.utility.createApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlin.math.sqrt
 
 class InGameClass {
     companion object {
         @SuppressLint("NewApi")
         @Composable
         fun InGameScreen(
-            inGame: InGame? = null,
+            inGame: InGame,
             gameState: List<Int> = listOf(180, 10, 10),
             onNavigateToGameResult: () -> Unit
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
+            
+            val userId = inGame.userId
 
             val apiService = remember { createApiService() }
             var checkResponse by remember { mutableStateOf(Checkconnection(connect = "tru", needToUpdate = true, string = "서승준병신")) }
@@ -92,7 +113,7 @@ class InGameClass {
             var successed = isTagged
 
             var firstEliminated by remember { mutableStateOf(false) }
-            var firstSuccess by remember { mutableStateOf(false) }
+            var firstsuccessed by remember { mutableStateOf(false) }
             LaunchedEffect(eliminated) {
                 if (!firstEliminated)
                 {
@@ -102,21 +123,21 @@ class InGameClass {
                 {
                     withContext(Dispatchers.IO)
                     {
-                        apiService.sendFailed(idInput)
+                        apiService.sendFailed(userId)
                     }
                 }
             }
             
-            LaunchedEffect(Success) {
-                if (!firstSuccess)
+            LaunchedEffect(successed) {
+                if (!firstsuccessed)
                 {
-                    firstSuccess = true
+                    firstsuccessed = true
                 }
                 else
                 {
                     withContext(Dispatchers.IO)
                     {
-                        apiService.sendSuccess(idInput)
+                        apiService.sendSuccess(userId)
                     }
                 }
             }
