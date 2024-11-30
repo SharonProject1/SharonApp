@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.example.sharonapp.utility.SecondApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,11 +35,11 @@ import kotlinx.coroutines.withContext
 
 
 
-class Home {
+class HomeClass {
     companion object {
 
         @Composable
-        fun HomeScreen(configuration: Configuration, navController: NavHostController): String {
+        fun HomeScreen(configuration: Configuration, nextScreen: () -> Unit): String {
             val screenWidth = configuration.screenWidthDp
             val screenHeight = configuration.screenHeightDp
             var codeInput by remember { mutableStateOf("") }
@@ -98,9 +97,10 @@ class Home {
                                         withContext(Dispatchers.IO) {
                                             apiService2.submitNickname(idInput)
                                         }
-                                        navController.navigate("waitingRoom")
+                                        nextScreen()
                                     } catch (e: Exception) {
-                                        println("Error: ${e.message}")
+                                        // 에러만 처리
+                                        nextScreen()
                                     }
                                 }
                                       },
@@ -120,11 +120,3 @@ class Home {
         }
     }
 }
-/*
-@Preview(showBackground = true)
-Composable
-fun HomeScreenPreview() {
-    SharonAppTheme {
-        Home.HomeScreen(LocalConfiguration.current, nextScreen = {})
-    }
-}*/

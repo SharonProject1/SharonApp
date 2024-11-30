@@ -1,4 +1,4 @@
-package com.example.sharon.screens
+package com.example.sharonapp.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -26,18 +26,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sharon.R
-import com.example.sharon.ui.theme.Green
-import com.example.sharon.ui.theme.Red
-import com.example.sharon.ui.theme.SharonTheme
+import com.example.sharonapp.R
+import com.example.sharonapp.ui.theme.Green
+import com.example.sharonapp.ui.theme.Red
 
 // 완성
-class Result {
+class GameResultClass {
     companion object {
 
         @OptIn(ExperimentalFoundationApi::class)
@@ -179,14 +176,5 @@ class Result {
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ResultScreenPreview() {
-
-    SharonTheme {
-        Result.ResultScreen(configuration = LocalConfiguration.current, nextScreen = {})
     }
 }

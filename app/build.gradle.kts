@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.sharon"
+    namespace = "com.example.sharonapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.sharon"
+        applicationId = "com.example.sharonapp"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

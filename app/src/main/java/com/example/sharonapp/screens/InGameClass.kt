@@ -1,4 +1,4 @@
-package com.example.sharon.screens
+package com.example.sharonapp.screens
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,25 +21,22 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotApplyResult
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sharon.ui.theme.Green
-import com.example.sharon.ui.theme.Yellow
-import com.example.sharon.ui.theme.Red
-import com.example.sharon.ui.theme.SharonTheme
+import com.example.sharonapp.ui.theme.Green
+import com.example.sharonapp.ui.theme.Yellow
+import com.example.sharonapp.ui.theme.Red
+import com.example.sharonapp.utility.Checkconnection
+import com.example.sharonapp.utility.GameState
+import com.example.sharonapp.utility.createApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 // 완성
-class InGame {
+class InGameClass {
     companion object {
         @Composable
         fun InGameScreen(idInput: String, configuration: Configuration, nextScreen: () -> Unit) {
@@ -200,12 +197,4 @@ class InGame {
     }
 
 
-}
-
-@Preview(showBackground = true)
-@Composable
-fun InGameScreenPreview() {
-    SharonTheme {
-        InGame.InGameScreen(idInput = "1",LocalConfiguration.current, nextScreen = {})
-    }
 }

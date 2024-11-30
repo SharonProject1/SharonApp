@@ -1,4 +1,4 @@
-package com.example.sharon.screens
+package com.example.sharonapp.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -16,16 +16,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sharon.ui.theme.SharonTheme
 import kotlinx.coroutines.delay
 
 // 완성
-class Start {
+class StartClass {
     companion object {
         @Composable
         fun StartScreen(configuration: Configuration, nextScreen: () -> Unit) {
@@ -76,13 +73,5 @@ class Start {
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun StartScreenPreview() {
-    SharonTheme {
-        Start.StartScreen(LocalConfiguration.current, nextScreen = {})
     }
 }
