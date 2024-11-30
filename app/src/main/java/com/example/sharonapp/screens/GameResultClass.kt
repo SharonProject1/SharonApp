@@ -44,11 +44,13 @@ class GameResultClass {
         @OptIn(ExperimentalFoundationApi::class)
         @Composable
         fun GameResultScreen(
-            gameResult: GameResult? = null,
+            gameResult: GameResult,
             onNavigateToHome: () -> Unit
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
+
+            val userId = gameResult.userId
 
             val gameResultData: List<List<String>> //json으로 받아온 데이터
 
@@ -209,10 +211,10 @@ class GameResultClass {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ResultScreenPreview() {
-    SharonAppTheme {
-        GameResultClass.GameResultScreen(onNavigateToHome = {})
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ResultScreenPreview() {
+//    SharonAppTheme {
+//        GameResultClass.GameResultScreen(onNavigateToHome = {})
+//    }
+//}

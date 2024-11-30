@@ -70,7 +70,6 @@ class InGameClass {
         @Composable
         fun InGameScreen(
             inGame: InGame,
-            gameState: List<Int> = listOf(180, 10, 10),
             onNavigateToGameResult: () -> Unit
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
@@ -79,13 +78,13 @@ class InGameClass {
             val userId = inGame.userId
 
             val apiService = remember { createApiService() }
-            var checkResponse by remember { mutableStateOf(Checkconnection(connect = "tru", needToUpdate = true, string = "서승준병신")) }
+            var checkResponse by remember { mutableStateOf(Checkconnection(connect = "멍멍", needToUpdate = true, string = "냥냥")) }
             
-            var gameState by remember { mutableStateOf(GameState(data = listOf())) }
+            var gameStateData by remember { mutableStateOf(GameState(data = listOf())) }
             var timeLeft by remember { mutableStateOf(180) }
-            var numberOfAlivePlayers by remember { mutableStateOf(10) }
             var numberOfPlayers by remember { mutableStateOf(10) }
-            
+            var numberOfAlivePlayers by remember { mutableStateOf(numberOfPlayers) }
+
             val isVoicing by remember { mutableStateOf(false) }
 
             var isPlayerFinished by remember { mutableStateOf(false) }
@@ -109,11 +108,11 @@ class InGameClass {
 
             var isFailedByTimeOut by remember { mutableStateOf(false) } // true 되면 탈락 요청
             
-            var eliminated = motionDetected && isFailedByTimeOut
-            var successed = isTagged
+            val eliminated = motionDetected && isFailedByTimeOut
+            val succeeded = isTagged
 
             var firstEliminated by remember { mutableStateOf(false) }
-            var firstsuccessed by remember { mutableStateOf(false) }
+            var firstSucceeded by remember { mutableStateOf(false) }
             LaunchedEffect(eliminated) {
                 if (!firstEliminated)
                 {
@@ -128,10 +127,10 @@ class InGameClass {
                 }
             }
             
-            LaunchedEffect(successed) {
-                if (!firstsuccessed)
+            LaunchedEffect(succeeded) {
+                if (!firstSucceeded)
                 {
-                    firstsuccessed = true
+                    firstSucceeded = true
                 }
                 else
                 {
@@ -146,12 +145,12 @@ class InGameClass {
                 while(true) {
                     try {
                         withContext(Dispatchers.IO) {
-                            var getstate = apiService.getGameState()
-                            gameState = getstate
+                            val getState = apiService.getGameState()
+                            gameStateData = getState
                         }
-                        timeLeft = gameState.data[8].toInt()
-                        numberOfAlivePlayers = gameState.data[6].toInt()
-                        numberOfPlayers = gameState.data[5].toInt()
+                        timeLeft = gameStateData.data[8].toInt()
+                        numberOfAlivePlayers = gameStateData.data[6].toInt()
+                        numberOfPlayers = gameStateData.data[5].toInt()
                         delay(100)
                     }
                     catch (e: Exception) {
@@ -374,7 +373,7 @@ class InGameClass {
             if(isGameOver) {
                 Dialog(onDismissRequest = {}) {
                     Text(
-                        text = "게임 종료",
+                        text = if(!isPlayerFinished) "시간 초과" else "게임 종료",
                         fontSize = (screenWidth * 20 / 100).sp,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -463,137 +462,137 @@ fun GameOverDialog(cause: String, size: Int) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun InGameScreenPreview() {
-    val screenWidth: Int = LocalConfiguration.current.screenWidthDp
-    val screenHeight: Int = LocalConfiguration.current.screenHeightDp
-
-    SharonAppTheme {
-        Scaffold { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.background)
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp)
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(4f)
-                    ) {
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1.5f)
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(Color.DarkGray)
-                                .fillMaxHeight(0.25f)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Spacer(modifier = Modifier.weight(1f))
-                                Box(
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .background(if(true) Red else Color.Black)
-                                        .weight(3f)
-                                        .aspectRatio(1f)
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Box(
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .background(Color.Black)
-                                        .weight(3f)
-                                        .aspectRatio(1f)
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Box(
-                                    modifier = Modifier
-                                        .clip(CircleShape)
-                                        .background(if(true) Green else Color.Black)
-                                        .weight(3f)
-                                        .aspectRatio(1f)
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
-                        }
-                        Box(
-                            modifier = Modifier
-                                .weight(0.7f)
-                                .height(5.dp)
-                                .clip(RectangleShape)
-                                .background(Color.DarkGray)
-                        )
-
-                        Spacer(modifier = Modifier.weight(0.3f))
-                    }
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "60",
-                            fontSize = (screenWidth * 25/100).sp,
-                            color = Green
-                        )
-                        Text(
-                            text = "남은 시간(초)",
-                            fontSize = (screenWidth * 7/100).sp
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "9/10",
-                            fontSize = (screenWidth * 20/100).sp,
-                            color = Green
-                        )
-                        Text(
-                            text = "현재 생존자(명)",
-                            fontSize = (screenWidth * 7/100).sp
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.weight(3f))
-
-                    Button(
-                        onClick = {},
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    ) {
-                        Text("다음 화면")
-                    }
-                }
-            }
-        }
-        Dialog(onDismissRequest = {}) {
-            Text(
-                text = "게임 종료",
-                fontSize = (screenWidth * 20 / 100).sp,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun InGameScreenPreview() {
+//    val screenWidth: Int = LocalConfiguration.current.screenWidthDp
+//    val screenHeight: Int = LocalConfiguration.current.screenHeightDp
+//
+//    SharonAppTheme {
+//        Scaffold { innerPadding ->
+//            Box(
+//                modifier = Modifier
+//                    .background(MaterialTheme.colorScheme.background)
+//                    .fillMaxSize()
+//                    .padding(innerPadding)
+//            ) {
+//                Column(
+//                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    verticalArrangement = Arrangement.Center,
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .padding(8.dp)
+//                ) {
+//                    Row(
+//                        horizontalArrangement = Arrangement.Center,
+//                        verticalAlignment = Alignment.CenterVertically,
+//                        modifier = Modifier.weight(4f)
+//                    ) {
+//                        Spacer(modifier = Modifier.weight(1f))
+//
+//                        Box(
+//                            modifier = Modifier
+//                                .weight(1.5f)
+//                                .clip(RoundedCornerShape(5.dp))
+//                                .background(Color.DarkGray)
+//                                .fillMaxHeight(0.25f)
+//                        ) {
+//                            Row(
+//                                verticalAlignment = Alignment.CenterVertically,
+//                                horizontalArrangement = Arrangement.Center,
+//                                modifier = Modifier.fillMaxSize()
+//                            ) {
+//                                Spacer(modifier = Modifier.weight(1f))
+//                                Box(
+//                                    modifier = Modifier
+//                                        .clip(CircleShape)
+//                                        .background(if(true) Red else Color.Black)
+//                                        .weight(3f)
+//                                        .aspectRatio(1f)
+//                                )
+//                                Spacer(modifier = Modifier.weight(1f))
+//                                Box(
+//                                    modifier = Modifier
+//                                        .clip(CircleShape)
+//                                        .background(Color.Black)
+//                                        .weight(3f)
+//                                        .aspectRatio(1f)
+//                                )
+//                                Spacer(modifier = Modifier.weight(1f))
+//                                Box(
+//                                    modifier = Modifier
+//                                        .clip(CircleShape)
+//                                        .background(if(true) Green else Color.Black)
+//                                        .weight(3f)
+//                                        .aspectRatio(1f)
+//                                )
+//                                Spacer(modifier = Modifier.weight(1f))
+//                            }
+//                        }
+//                        Box(
+//                            modifier = Modifier
+//                                .weight(0.7f)
+//                                .height(5.dp)
+//                                .clip(RectangleShape)
+//                                .background(Color.DarkGray)
+//                        )
+//
+//                        Spacer(modifier = Modifier.weight(0.3f))
+//                    }
+//
+//                    Column(
+//                        horizontalAlignment = Alignment.CenterHorizontally,
+//                        verticalArrangement = Arrangement.Center
+//                    ) {
+//                        Text(
+//                            text = "60",
+//                            fontSize = (screenWidth * 25/100).sp,
+//                            color = Green
+//                        )
+//                        Text(
+//                            text = "남은 시간(초)",
+//                            fontSize = (screenWidth * 7/100).sp
+//                        )
+//                    }
+//
+//                    Spacer(modifier = Modifier.weight(1f))
+//
+//                    Column(
+//                        horizontalAlignment = Alignment.CenterHorizontally,
+//                        verticalArrangement = Arrangement.Center
+//                    ) {
+//                        Text(
+//                            text = "9/10",
+//                            fontSize = (screenWidth * 20/100).sp,
+//                            color = Green
+//                        )
+//                        Text(
+//                            text = "현재 생존자(명)",
+//                            fontSize = (screenWidth * 7/100).sp
+//                        )
+//                    }
+//
+//                    Spacer(modifier = Modifier.weight(3f))
+//
+//                    Button(
+//                        onClick = {},
+//                        colors = ButtonDefaults.buttonColors(
+//                            containerColor = MaterialTheme.colorScheme.primary,
+//                            contentColor = MaterialTheme.colorScheme.onPrimary
+//                        ),
+//                        modifier = Modifier.align(Alignment.CenterHorizontally)
+//                    ) {
+//                        Text("다음 화면")
+//                    }
+//                }
+//            }
+//        }
+//        Dialog(onDismissRequest = {}) {
+//            Text(
+//                text = "게임 종료",
+//                fontSize = (screenWidth * 20 / 100).sp,
+//                color = MaterialTheme.colorScheme.primary
+//            )
+//        }
+//    }
+//}
