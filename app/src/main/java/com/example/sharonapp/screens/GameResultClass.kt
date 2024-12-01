@@ -1,6 +1,5 @@
 package com.example.sharonapp.screens
 
-import android.content.res.Configuration
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -9,10 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,17 +28,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sharonapp.GameResult
 import com.example.sharonapp.R
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Red
-import com.example.sharonapp.ui.theme.SharonAppTheme
 import com.example.sharonapp.utility.ServerResponse
 import com.example.sharonapp.utility.createApiService
 import kotlinx.coroutines.Dispatchers
@@ -53,50 +47,37 @@ class GameResultClass {
         @OptIn(ExperimentalFoundationApi::class)
         @Composable
         fun GameResultScreen(
-            gameResult: GameResult? = null,
+            gameResult: GameResult,
             onNavigateToHome: () -> Unit
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
 
-            var gameResultData by remember { mutableStateOf(listOf<List<String>>()) }
+            val userId = gameResult.userId
+
             val apiService = remember { createApiService() }
-            var playerDataResponsed by remember { mutableStateOf(ServerResponse(data = listOf())) }
+            var gameResultData by remember { mutableStateOf(listOf<List<String>>()) }
+            var gameResultDataResponded by remember { mutableStateOf(ServerResponse(data = listOf())) }
 
             LaunchedEffect(Unit) {
                 try {
-                    withContext(Dispatchers.IO)
-                    {
-                        playerDataResponsed = apiService.getPlayerState()
+                    withContext(Dispatchers.IO) {
+                        gameResultDataResponded = apiService.getPlayerState()
                     }
-                    gameResultData = playerDataResponsed.data
+                    gameResultData = gameResultDataResponded.data
                 }
-                catch (e: Exception)
-                {
-                    println("${e.message} 냐옹")
+                catch (e: Exception) {
+                    val tempData = listOf(
+                        listOf("생존", "1위", "11", "None", "-"),
+                        listOf("생존", "2위", "22", "None", "-"),
+                        listOf("탈락", "3위", "33", "None", "-"),
+                        listOf("탈락", "4위", "44", "None", "-"),
+                        listOf("탈락", "5위", "55", "None", "-"),
+                        listOf("연결 끊김", "-", "66", "None", "-")
+                    )
+                    gameResultData = tempData
                 }
-
             }
-/* data format
-[
-    [playerState, rank, playerNumber, playerId, playTime],
-    [playerState, ...],
-    ...
-]
-*/
-
-            /* 테스트 데이터 val testResult = listOf( // 삭제 바람
-                listOf("생존", "1위", "39", "엄준식", "46s"),
-                listOf("생존", "2위", "71", "똥파리", "53초"),
-                listOf("탈락", "3위", "3", "아이시떼루", "시간 초과"),
-                listOf("탈락", "4위", "666", "마님", "시간 초과"),
-                listOf("탈락", "5위", "15", "코파고카레먹기", "35초"),
-                listOf("연결 끊김", "-", "39", "돌쇠", "-"),
-            )
-
-            gameResultData = testResult */
-
-            val pagerState = rememberPagerState(pageCount = { gameResultData.size })
 
             Scaffold { innerPadding ->
                 Box(
@@ -121,6 +102,7 @@ class GameResultClass {
                         )
                         Spacer(modifier = Modifier.weight(1f))
 
+                        val pagerState = rememberPagerState(pageCount = { gameResultData.size })
                         HorizontalPager(
                             state = pagerState,
                             modifier = Modifier
@@ -234,10 +216,10 @@ class GameResultClass {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ResultScreenPreview() {
-    SharonAppTheme {
-        GameResultClass.GameResultScreen(onNavigateToHome = {})
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ResultScreenPreview() {
+//    SharonAppTheme {
+//        GameResultClass.GameResultScreen(onNavigateToHome = {})
+//    }
+//}

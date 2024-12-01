@@ -1,6 +1,7 @@
 package com.example.sharonapp.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,8 +35,6 @@ import com.example.sharonapp.utility.SecondApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-
 
 class HomeClass {
     companion object {
@@ -46,10 +47,13 @@ class HomeClass {
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
 
             var codeInput by remember { mutableStateOf("") }
+            var idInput by remember { mutableStateOf("") }
+
+            val focusManager = LocalFocusManager.current
+            val isButtonEnabled = codeInput.isNotBlank() && idInput.isNotBlank()
 
             val coroutineScope = rememberCoroutineScope()
             val apiService2 = remember { SecondApiService() }
-            var idInput by remember { mutableStateOf("") }
 
             Scaffold { innerPadding ->
                 Box(
@@ -57,6 +61,11 @@ class HomeClass {
                         .background(MaterialTheme.colorScheme.background)
                         .fillMaxSize()
                         .padding(innerPadding)
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                focusManager.clearFocus()
+                            }
+                        }
                 ) {
                     Column(
                         verticalArrangement = Arrangement.Center,
@@ -78,7 +87,10 @@ class HomeClass {
                         Spacer(modifier = Modifier.height((screenHeight * 10/100).dp))
                         TextField(
                             value = codeInput,
-                            onValueChange = { codeInput = it },
+                            onValueChange = {
+                                codeInput = it
+//                                isButtonEnabled.value = it.isNotEmpty()
+                            },
                             placeholder = { Text(text = "대기실 코드") },
                             modifier = Modifier.fillMaxWidth(0.8f),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
@@ -86,13 +98,17 @@ class HomeClass {
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         TextField(
                             value = idInput,
-                            onValueChange = { idInput = it },
+                            onValueChange = {
+                                idInput = it
+//                                isButtonEnabled.value = it.isNotEmpty()
+                            },
                             placeholder = { Text(text = "닉네임") },
                             modifier = Modifier.fillMaxWidth(0.8f),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         Button(
+                            enabled = isButtonEnabled,
                             onClick = {
                                 coroutineScope.launch {
                                     try{

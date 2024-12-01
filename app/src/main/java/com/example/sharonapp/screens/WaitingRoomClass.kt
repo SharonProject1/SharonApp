@@ -90,8 +90,8 @@ class WaitingRoomClass {
                 )
             }
             
-            var tempsignal by remember { mutableStateOf(isRunningResponse(data = false)) }
-            var playerDataResponsed by remember { mutableStateOf(ServerResponse(data = listOf())) }
+            var tempSignal by remember { mutableStateOf(isRunningResponse(data = false)) }
+            var playerDataResponded by remember { mutableStateOf(ServerResponse(data = listOf())) }
             var numberOfPlayers by remember { mutableIntStateOf(7) }
             var playerData by remember { mutableStateOf(listOf<List<String>>()) }
             
@@ -106,9 +106,9 @@ class WaitingRoomClass {
                                 // response.body()를 통해 Checkconnection 데이터 추출
                                 checkResponse = response.body() ?: Checkconnection("false", false, "No Data")
 
-                                tempsignal = signal.body() ?: isRunningResponse(false)
+                                tempSignal = signal.body() ?: isRunningResponse(false)
                                 /*
-                                startSignal = tempsignal.runningResponse
+                                startSignal = tempSignal.runningResponse
                                 println("$startSignal 야동")
                                 */
                             } else {
@@ -128,13 +128,13 @@ class WaitingRoomClass {
             LaunchedEffect(checkResponse.string) {
                 if(checkResponse.needToUpdate) {
                     try {
-                        playerDataResponsed = withContext(Dispatchers.IO) {
+                        playerDataResponded = withContext(Dispatchers.IO) {
                             apiService.getPlayerData(userId)
                         }
-                        playerData = playerDataResponsed.data
-                        numberOfPlayers = playerDataResponsed.pCount
+                        playerData = playerDataResponded.data
+                        numberOfPlayers = playerDataResponded.pCount
                     } catch (e: Exception) {
-                        val templayerDataResponsedata = listOf(
+                        val tempData = listOf(
                                   listOf("나 자신", "NaN", "false", "true", "false"),
                                   listOf("테스트용1", "1", "false", "true", "false"),
                                   listOf("테스트용2", "2", "false", "true", "false"),
@@ -146,8 +146,8 @@ class WaitingRoomClass {
                                   listOf("테스트용8", "8", "false", "true", "false"),
                                   listOf("테스트용9", "9", "true", "true", "false")
                               )
-                        playerData = templayerDataResponsedata
-                        numberOfPlayers = templayerDataResponsedata.size
+                        playerData = tempData
+                        numberOfPlayers = tempData.size
                     }
                 }
             }
@@ -221,8 +221,8 @@ class WaitingRoomClass {
             }
 
             val isFirstLaunch = remember { mutableStateOf(true) }
-            LaunchedEffect(tempsignal.data) {
-                startSignal = tempsignal.data
+            LaunchedEffect(tempSignal.data) {
+                startSignal = tempSignal.data
                 println("$startSignal 야동")
                 if(isFirstLaunch.value) {
                     isFirstLaunch.value = false
@@ -249,13 +249,10 @@ fun PlayerBox(
         return
     }
     var textState by remember { mutableStateOf("") }
-    var figureColor = Red
     val isReady = playerData[index][2]
+
     val apiService = remember { createApiService() }
     var isInitialized by remember { mutableStateOf(false) }
-
-    if (isReady == "true")
-        figureColor = Green
 
     Box(
         modifier = Modifier
@@ -288,7 +285,7 @@ fun PlayerBox(
                     Box(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .background(figureColor)
+                            .background(if(isReady.toBoolean()) Green else Red)
                             .weight(1f)
                             .aspectRatio(1f)
                             .fillMaxSize()
@@ -296,7 +293,7 @@ fun PlayerBox(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape((size * 64 / 30).dp, (size * 64 / 30).dp))
-                            .background(figureColor)
+                            .background(if(isReady.toBoolean()) Green else Red)
                             .weight(2f)
                             .aspectRatio(1f)
                             .fillMaxSize()
@@ -315,7 +312,7 @@ fun PlayerBox(
 
                                     if (it.all { it.isDigit() } && it.length <= 3) {
                                         textState = it
-                                        isButtonEnabled.value = it.isNotEmpty() && !isDuplicated
+                                        isButtonEnabled.value = it.isNotEmpty() && !isDuplicated && (it.toInt() != 0)
                                     }
                                 },
                                 placeholder = {
@@ -358,42 +355,40 @@ fun PlayerBox(
                 }
             }
         }
+
         LaunchedEffect(isButtonOn) {
-            if (isInitialized)
-            {
-            if (isButtonOn) {
-                withContext(Dispatchers.IO) {
-                    try {
-
-                        val response = apiService.getInputNumber(nickname = playerData[0][0], number = textState.toInt() )
-                        val response2 = apiService.sendReady(playerData[0][0]) // 준비 완료 전송
-
-                        if (response.isSuccessful) {
-                            Log.d("Server Response", response.body()?.string ?: "Empty Response")
-                        } else {
-                            Log.e("Error Response", response.errorBody()?.string() ?: "No Error Body")
+            if (isInitialized) {
+                if (isButtonOn) {
+                    withContext(Dispatchers.IO) {
+                        try {
+    
+                            val response = apiService.getInputNumber(nickname = playerData[0][0], number = textState.toInt() )
+                            val response2 = apiService.sendReady(playerData[0][0]) // 준비 완료 전송
+    
+                            if (response.isSuccessful) {
+                                Log.d("Server Response", response.body()?.string ?: "Empty Response")
+                            } else {
+                                Log.e("Error Response", response.errorBody()?.string() ?: "No Error Body")
+                            }
+                        } catch (e: Exception) {
+                            Log.e("Network Error", e.message ?: "Unknown Error")
                         }
-                    } catch (e: Exception) {
-                        Log.e("Network Error", e.message ?: "Unknown Error")
+    
                     }
-
+                }
+                else {
+                    withContext(Dispatchers.IO) {
+                        try {
+                            apiService.sendNotReady(playerData[0][0]) // 준비 취소 전송
+                        } catch (e: Exception) {
+                            println("Error: ${e.message}")
+                        }
+                    }
                 }
             }
             else {
-                withContext(Dispatchers.IO) {
-                    try {
-                        apiService.sendNotReady(playerData[0][0]) // 준비 취소 전송
-                    } catch (e: Exception) {
-                        println("Error: ${e.message}")
-                    }
-                }
-            }
-            }
-            else
-            {
                 isInitialized = true
             }
         }
-
     }
 }
