@@ -101,7 +101,8 @@ class InGameClass {
             var zValue by remember { mutableFloatStateOf(0f) }
             val threshold = 15f
 
-            val canMove = !isVoicing
+//            val canMove = !isVoicing
+            val canMove = false
 
             var motionDetected by remember { mutableStateOf(false) } // true 되면 탈락 요청
 
@@ -123,7 +124,12 @@ class InGameClass {
                 {
                     withContext(Dispatchers.IO)
                     {
-                        apiService.sendFailed(userId)
+                        try {
+                            apiService.sendFailed(userId)
+                        }
+                        catch (e : Exception) {
+                            println("$e 똥 ㅋㅋㅋㅋㅋㅋㅋ")
+                        }
                     }
                 }
             }
