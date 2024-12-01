@@ -16,6 +16,8 @@ import retrofit2.http.Query
 // Retrofit 인터페이스 및 데이터 클래스 정의
 data class Checkconnection(val connect: String , val needToUpdate: Boolean, val string: String)
 data class sendNum(val string: String)
+data class GetFailed(val string: String)
+data class GetSuccess(val string: String)
 data class isRunningResponse(val data: Boolean)
 // 1. JSON 구조에 맞는 데이터 클래스 정의
 @Parcelize
@@ -51,9 +53,9 @@ interface ApiService {
     @GET("/state")
     suspend fun getGameState(): GameState
     @GET("/failed/{nickname}")
-    suspend fun sendFailed(@Path("nickname") nickname: String): Response<String>
+    suspend fun sendFailed(@Path("nickname") nickname: String): Response<GetFailed>
     @GET("/survived/{nickname}")
-    suspend fun sendSuccess(@Path("nickname") nickname: String): Response<String>
+    suspend fun sendSuccess(@Path("nickname") nickname: String): Response<GetSuccess>
     @GET("/resultData")
     suspend fun getPlayerState(): ServerResponse
 }

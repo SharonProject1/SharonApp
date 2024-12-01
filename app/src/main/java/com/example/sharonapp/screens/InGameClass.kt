@@ -85,10 +85,9 @@ class InGameClass {
             var timeLeft by remember { mutableStateOf(180) }
             var numberOfPlayers by remember { mutableStateOf(10) }
             var numberOfPlayersNotFinished by remember { mutableStateOf(numberOfPlayers) }
-            
-            val isVoicing by remember { mutableStateOf(false) }
-//            val canMove = !isVoicing
-            val canMove = false
+
+            var isVoicingString by remember { mutableStateOf("false") }
+            var canMove by remember { mutableStateOf(false) }
 
             val context = LocalContext.current
 
@@ -125,12 +124,18 @@ class InGameClass {
                 if (!isFirstEliminated) {
                     isFirstEliminated = true
                 } else {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            apiService.sendFailed(userId)
+                    withContext(Dispatchers.IO) {
+                        try {
+                            val response = apiService.sendFailed(userId)
+                            println("Response: ${response.body()}")
+                            if (response.isSuccessful) {
+                                println("API 호출 성공: ${response.body()}")
+                            } else {
+                                println("API 호출 실패: ${response.errorBody()}")
+                            }
+                        } catch (e: Exception) {
+                            println("$e 똥 ㅋㅋㅋㅋㅋㅋㅋ")
                         }
-                    } catch (e: Exception) {
-                        println("$e 똥 ㅋㅋ")
                     }
                 }
             }
@@ -143,7 +148,7 @@ class InGameClass {
                     try {
 
                         withContext(Dispatchers.IO) {
-                            apiService.sendSuccess(userId)
+                            val response = apiService.sendSuccess(userId)
                         }
                     }
                     catch (e : Exception)
@@ -161,10 +166,19 @@ class InGameClass {
                             val getState = apiService.getGameState()
                             gameStateData = getState
                         }
+                        isVoicingString = gameStateData.data[1]
                         timeLeft = gameStateData.data[8].toInt()
                         numberOfPlayersNotFinished = gameStateData.data[6].toInt()
                         numberOfPlayers = gameStateData.data[5].toInt()
 
+                        if (isVoicingString == "true")
+                        {
+                            canMove = true
+                        }
+                        else if (isVoicingString == "false")
+                        {
+                            canMove = false
+                        }
                         if(gameStateData.data[0] == "false" && straightBoolean) {
                             booleanChanged.value++
                             straightBoolean = false
