@@ -84,8 +84,8 @@ class InGameClass {
             var numberOfPlayersNotFinished by remember { mutableStateOf(numberOfPlayers) }
             
             val isVoicing by remember { mutableStateOf(false) }
-            val canMove = !isVoicing
-//            val canMove = false
+//            val canMove = !isVoicing
+            val canMove = false
 
             val context = LocalContext.current
             val sensorManager = remember { context.getSystemService(SensorManager::class.java) }
@@ -131,27 +131,39 @@ class InGameClass {
                 }
             }
 
-//            // 튕김 버그 발생 중
-//            LaunchedEffect(isEliminated) {
-//                if (!isFirstEliminated) {
-//                    isFirstEliminated = true
-//                } else {
-//                    withContext(Dispatchers.IO) {
-//                        apiService.sendFailed(userId)
-//                    }
-//                }
-//            }
-//
-//            // 튕김 버그 발생 중
-//            LaunchedEffect(isSucceeded) {
-//                if (!isFirstSucceeded) {
-//                    isFirstSucceeded = true
-//                } else {
-//                    withContext(Dispatchers.IO) {
-//                        apiService.sendSuccess(userId)
-//                    }
-//                }
-//            }
+            // 튕김 버그 발생 중
+            LaunchedEffect(isEliminated) {
+                if (!isFirstEliminated) {
+                    isFirstEliminated = true
+                } else {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            apiService.sendFailed(userId)
+                        }
+                    } catch (e: Exception) {
+                        println("$e 똥 ㅋㅋ")
+                    }
+                }
+            }
+
+            // 튕김 버그 발생 중
+            LaunchedEffect(isSucceeded) {
+
+                if (!isFirstSucceeded) {
+                    isFirstSucceeded = true
+                } else {
+                    try {
+
+                        withContext(Dispatchers.IO) {
+                            apiService.sendSuccess(userId)
+                        }
+                    }
+                    catch (e : Exception)
+                    {
+                        println("똥꼬 ㅋㅋ")
+                    }
+                }
+            }
 
             LaunchedEffect(Unit) {
                 while(isRunning.value) {

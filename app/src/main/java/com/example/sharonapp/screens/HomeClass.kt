@@ -1,6 +1,7 @@
 package com.example.sharonapp.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,8 +35,6 @@ import com.example.sharonapp.utility.SecondApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-
 
 class HomeClass {
     companion object {
@@ -48,6 +49,7 @@ class HomeClass {
             var codeInput by remember { mutableStateOf("") }
             var idInput by remember { mutableStateOf("") }
 
+            val focusManager = LocalFocusManager.current
             val isButtonEnabled = codeInput.isNotBlank() && idInput.isNotBlank()
 
             val coroutineScope = rememberCoroutineScope()
@@ -59,6 +61,11 @@ class HomeClass {
                         .background(MaterialTheme.colorScheme.background)
                         .fillMaxSize()
                         .padding(innerPadding)
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                focusManager.clearFocus()
+                            }
+                        }
                 ) {
                     Column(
                         verticalArrangement = Arrangement.Center,
