@@ -171,14 +171,12 @@ class InGameClass {
                         numberOfPlayersNotFinished = gameStateData.data[6].toInt()
                         numberOfPlayers = gameStateData.data[5].toInt()
 
-                        if (isVoicingString == "true")
-                        {
+                        if (isVoicingString == "true") {
                             canMove = true
-                        }
-                        else if (isVoicingString == "false")
-                        {
+                        } else if (isVoicingString == "false") {
                             canMove = false
                         }
+
                         if(gameStateData.data[0] == "false" && straightBoolean) {
                             booleanChanged.value++
                             straightBoolean = false
