@@ -82,10 +82,9 @@ class InGameClass {
             var timeLeft by remember { mutableStateOf(180) }
             var numberOfPlayers by remember { mutableStateOf(10) }
             var numberOfPlayersNotFinished by remember { mutableStateOf(numberOfPlayers) }
-            
-            val isVoicing by remember { mutableStateOf(false) }
-//            val canMove = !isVoicing
-            val canMove = false
+
+            var isVoicingString by remember { mutableStateOf("false") }
+            var canMove by remember { mutableStateOf(false) }
 
             val context = LocalContext.current
             val sensorManager = remember { context.getSystemService(SensorManager::class.java) }
@@ -180,10 +179,19 @@ class InGameClass {
                             val getState = apiService.getGameState()
                             gameStateData = getState
                         }
+                        isVoicingString = gameStateData.data[1]
                         timeLeft = gameStateData.data[8].toInt()
                         numberOfPlayersNotFinished = gameStateData.data[6].toInt()
                         numberOfPlayers = gameStateData.data[5].toInt()
 
+                        if (isVoicingString == "true")
+                        {
+                            canMove = true
+                        }
+                        else if (isVoicingString == "false")
+                        {
+                            canMove = false
+                        }
                         if(gameStateData.data[0] == "false" && straightBoolean) {
                             booleanChanged.value++
                             straightBoolean = false
