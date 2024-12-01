@@ -135,13 +135,15 @@ class InGameClass {
             LaunchedEffect(isEliminated) {
                 if (!isFirstEliminated) {
                     isFirstEliminated = true
-                } else {
-                    try {
-                        withContext(Dispatchers.IO) {
+                }
+                else {
+                    withContext(Dispatchers.IO) {
+                        try {
                             apiService.sendFailed(userId)
                         }
-                    } catch (e: Exception) {
-                        println("$e 똥 ㅋㅋ")
+                        catch (e : Exception) {
+                            println("$e 똥 ㅋㅋㅋㅋㅋㅋㅋ")
+                        }
                     }
                 }
             }
