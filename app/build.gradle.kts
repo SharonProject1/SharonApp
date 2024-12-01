@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.jetbrains.kotlinx.serialization.json)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.activity.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -73,6 +74,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     //parcelable
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0") // Kotlin 표준 라이브러리
+    implementation(libs.kotlin.stdlib) // Kotlin 표준 라이브러리
 
 }

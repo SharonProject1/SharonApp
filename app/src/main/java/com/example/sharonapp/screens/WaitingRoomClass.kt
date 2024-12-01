@@ -50,9 +50,7 @@ import androidx.compose.ui.unit.sp
 import com.example.sharonapp.WaitingRoom
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Red
-import com.example.sharonapp.ui.theme.White
 import com.example.sharonapp.utility.Checkconnection
-import com.example.sharonapp.utility.SecondApiService
 import com.example.sharonapp.utility.ServerResponse
 import com.example.sharonapp.utility.createApiService
 import com.example.sharonapp.utility.isRunningResponse
@@ -77,7 +75,7 @@ class WaitingRoomClass {
             val isButtonOn = remember { mutableStateOf(false) }
 
             var startSignal by remember { mutableStateOf(false) }
-            var connection by rememberSaveable { mutableStateOf(true) }
+            val connection by rememberSaveable { mutableStateOf(true) }
             val apiService = remember { createApiService() }
             var checkResponse by remember {
                 mutableStateOf(
@@ -102,18 +100,16 @@ class WaitingRoomClass {
                                 val response = apiService.connectionCheck(userId)
                                 val signal = apiService.isRunning(userId)
                                 if (response.isSuccessful) {
-                                // response.body()를 통해 Checkconnection 데이터 추출
-                                checkResponse = response.body() ?: Checkconnection("false", false, "No Data")
-
-                                tempSignal = signal.body() ?: isRunningResponse(false)
+                                    checkResponse = response.body() ?: Checkconnection("false", false, "No Data")
+                                    tempSignal = signal.body() ?: isRunningResponse(false)
                                 /*
                                 startSignal = tempSignal.runningResponse
                                 println("$startSignal 야동")
                                 */
-                            } else {
-                                // 에러 처리
-                                println("Error Response: ${response.errorBody()?.string()}")
-                            }
+                                } else {
+                                    // 에러 처리
+                                    println("Error Response: ${response.errorBody()?.string()}")
+                                }
                             }
                         } catch (e: Exception) {
                             println("$e 냠냠")
@@ -209,7 +205,16 @@ class WaitingRoomClass {
                             },
                             enabled = isButtonEnabled.value,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if(isButtonOn.value) Color(0x5000FF00) else Color(0xA000FF00)
+                                containerColor = if(!isButtonOn.value)
+                                    MaterialTheme.colorScheme.secondaryContainer
+                                else
+                                    Color(
+                                        red = MaterialTheme.colorScheme.secondaryContainer.red,
+                                        green = MaterialTheme.colorScheme.secondaryContainer.green,
+                                        blue = MaterialTheme.colorScheme.secondaryContainer.blue,
+                                        alpha = MaterialTheme.colorScheme.secondaryContainer.alpha * 1/2
+                                    ),
+                                contentColor = MaterialTheme.colorScheme.onBackground
                             )
                         ) {
                             Text("준비 완료")
@@ -256,7 +261,7 @@ fun PlayerBox(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape((screenWidth * 5 / 100).dp))
-            .background(color = Color.DarkGray)
+            .background(color = MaterialTheme.colorScheme.primaryContainer)
             .size(size.dp)
             .aspectRatio(1f)
     ) {
@@ -303,7 +308,7 @@ fun PlayerBox(
                                 textStyle = TextStyle(
                                     fontSize = (size / 6).sp,
                                     lineHeight = (size / 4).sp,
-                                    color = White,
+                                    color = MaterialTheme.colorScheme.onBackground,
                                     textAlign = TextAlign.Center
                                 ),
                                 onValueChange = {
@@ -326,16 +331,16 @@ fun PlayerBox(
                                     )
                                 },
                                 colors = TextFieldDefaults.colors(
-                                    focusedTextColor = White,
-                                    unfocusedTextColor = Color.LightGray,
-                                    disabledTextColor = Color.Gray,
+                                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                                    disabledTextColor = MaterialTheme.colorScheme.onBackground,
                                     focusedContainerColor = Color(0x00000000),
                                     unfocusedContainerColor = Color(0x00000000),
                                     disabledContainerColor = Color(0x00000000),
                                     focusedIndicatorColor = Color(0x00000000),
                                     unfocusedIndicatorColor = Color(0x00000000),
                                     disabledIndicatorColor = Color(0x00000000),
-                                    cursorColor = White
+                                    cursorColor = MaterialTheme.colorScheme.onBackground
                                 ),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 enabled = !isButtonOn,

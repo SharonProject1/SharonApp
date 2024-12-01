@@ -1,6 +1,5 @@
 package com.example.sharonapp.screens
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,7 +43,6 @@ import kotlinx.coroutines.withContext
 class GameResultClass {
     companion object {
 
-        @OptIn(ExperimentalFoundationApi::class)
         @Composable
         fun GameResultScreen(
             gameResult: GameResult,
@@ -98,7 +96,7 @@ class GameResultClass {
                         Text(
                             text = "게임 결과",
                             fontSize = (screenWidth * 10/100).sp,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.weight(1f))
 
@@ -204,8 +202,8 @@ class GameResultClass {
                         Button(
                             onClick = { onNavigateToHome() },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                             ),
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         ) {
@@ -219,11 +217,3 @@ class GameResultClass {
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun ResultScreenPreview() {
-//    SharonAppTheme {
-//        GameResultClass.GameResultScreen(onNavigateToHome = {})
-//    }
-//}

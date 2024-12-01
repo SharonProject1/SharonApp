@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -44,7 +43,6 @@ class HomeClass {
             onNavigateToWaitingRoom: (idInput: String) -> Unit
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
-            val screenHeight: Int = LocalConfiguration.current.screenHeightDp
 
             var codeInput by remember { mutableStateOf("") }
             var idInput by remember { mutableStateOf("") }
@@ -74,6 +72,7 @@ class HomeClass {
                             .padding(16.dp)
                             .fillMaxSize()
                     ) {
+                        Spacer(modifier = Modifier.weight(12f))
                         Text(
                             text = "무궁화 꽃이",
                             fontSize = (screenWidth * 10/100).sp,
@@ -82,31 +81,29 @@ class HomeClass {
                         Text(
                             text = "피었습니다!",
                             fontSize = (screenWidth * 10/100).sp,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.secondary
                         )
-                        Spacer(modifier = Modifier.height((screenHeight * 10/100).dp))
+                        Spacer(modifier = Modifier.weight(6f))
                         TextField(
                             value = codeInput,
                             onValueChange = {
                                 codeInput = it
-//                                isButtonEnabled.value = it.isNotEmpty()
                             },
                             placeholder = { Text(text = "대기실 코드") },
                             modifier = Modifier.fillMaxWidth(0.8f),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
-                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
+                        Spacer(modifier = Modifier.weight(1f))
                         TextField(
                             value = idInput,
                             onValueChange = {
                                 idInput = it
-//                                isButtonEnabled.value = it.isNotEmpty()
                             },
                             placeholder = { Text(text = "닉네임") },
                             modifier = Modifier.fillMaxWidth(0.8f),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
-                        Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
+                        Spacer(modifier = Modifier.weight(1f))
                         Button(
                             enabled = isButtonEnabled,
                             onClick = {
@@ -117,20 +114,20 @@ class HomeClass {
                                         }
                                         onNavigateToWaitingRoom(idInput)
                                     } catch (e: Exception) {
-                                        // 에러만 처리
                                         onNavigateToWaitingRoom(idInput)
                                     }
                                 }
                             },
 
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             ),
                             modifier = Modifier.align(Alignment.CenterHorizontally)
                         ) {
                             Text(text = "게임 시작")
                         }
+                        Spacer(modifier = Modifier.weight(12f))
                     }
                 }
             }

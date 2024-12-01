@@ -72,8 +72,7 @@ class InGameClass {
             onNavigateToGameResult: () -> Unit
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
-            val screenHeight: Int = LocalConfiguration.current.screenHeightDp
-            
+
             val userId = inGame.userId
 
             val apiService = remember { createApiService() }
@@ -146,7 +145,6 @@ class InGameClass {
                     isFirstSucceeded = true
                 } else {
                     try {
-
                         withContext(Dispatchers.IO) {
                             val response = apiService.sendSuccess(userId)
                         }
@@ -330,9 +328,9 @@ class InGameClass {
                             Text(
                                 text = "$timeLeft",
                                 fontSize = (screenWidth * 25/100).sp,
-                                color = if(timeLeft > 90) {
+                                color = if(timeLeft > 15) {
                                     Green
-                                } else if(timeLeft in 31..90) {
+                                } else if(timeLeft in 5..15) {
                                     Yellow
                                 } else {
                                     Red
@@ -429,7 +427,7 @@ fun GameOverDialog(cause: String, size: Int) {
                 red = MaterialTheme.colorScheme.background.red,
                 green = MaterialTheme.colorScheme.background.green,
                 blue = MaterialTheme.colorScheme.background.blue,
-                alpha = MaterialTheme.colorScheme.background.alpha * 9/10
+                alpha = MaterialTheme.colorScheme.background.alpha * 8/10
                 )
             )
         ) {
