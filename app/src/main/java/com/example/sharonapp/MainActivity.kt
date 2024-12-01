@@ -1,14 +1,18 @@
 package com.example.sharonapp
 
+import com.example.sharonapp.utility.NFCViewModel
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -23,6 +27,10 @@ import com.example.sharonapp.ui.theme.SharonAppTheme
 import kotlinx.serialization.Serializable
 
 class MainActivity : ComponentActivity() {
+
+    private val nfcViewModel: NFCViewModel by viewModels()
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -74,6 +82,7 @@ class MainActivity : ComponentActivity() {
                         val inGame: InGame = navBackStackEntry.toRoute()
                         InGameClass.InGameScreen(
                             inGame = inGame,
+                            nfcViewModel = nfcViewModel,
                             onNavigateToGameResult = {
                                 navController.navigate(
                                     route = GameResult(userId = userId)
@@ -96,6 +105,13 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        InGameClass.handleNewIntent(intent, nfcViewModel)
+    }
+
 }
 
 @Serializable
