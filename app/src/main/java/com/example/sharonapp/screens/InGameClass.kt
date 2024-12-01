@@ -135,18 +135,23 @@ class InGameClass {
             LaunchedEffect(isEliminated) {
                 if (!isFirstEliminated) {
                     isFirstEliminated = true
-                }
-                else {
+                } else {
                     withContext(Dispatchers.IO) {
                         try {
-                            apiService.sendFailed(userId)
-                        }
-                        catch (e : Exception) {
+                            val response = apiService.sendFailed(userId)
+                            println("Response: ${response.body()}")
+                            if (response.isSuccessful) {
+                                println("API 호출 성공: ${response.body()}")
+                            } else {
+                                println("API 호출 실패: ${response.errorBody()}")
+                            }
+                        } catch (e: Exception) {
                             println("$e 똥 ㅋㅋㅋㅋㅋㅋㅋ")
                         }
                     }
                 }
             }
+
 
             // 튕김 버그 발생 중
             LaunchedEffect(isSucceeded) {
@@ -157,7 +162,7 @@ class InGameClass {
                     try {
 
                         withContext(Dispatchers.IO) {
-                            apiService.sendSuccess(userId)
+                            val response = apiService.sendSuccess(userId)
                         }
                     }
                     catch (e : Exception)
