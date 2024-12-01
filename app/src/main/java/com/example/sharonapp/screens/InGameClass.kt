@@ -4,11 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import android.content.res.Configuration
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
-import android.graphics.Paint.Align
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -47,16 +44,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
+import com.example.sharonapp.GameResult
 import com.example.sharonapp.InGame
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Yellow
 import com.example.sharonapp.ui.theme.Red
-import com.example.sharonapp.ui.theme.SharonAppTheme
-import com.example.sharonapp.utility.Checkconnection
 import com.example.sharonapp.utility.GameState
 import com.example.sharonapp.utility.createApiService
 import kotlinx.coroutines.Dispatchers
@@ -78,20 +74,20 @@ class InGameClass {
             val userId = inGame.userId
 
             val apiService = remember { createApiService() }
-            var checkResponse by remember { mutableStateOf(Checkconnection(connect = "멍멍", needToUpdate = true, string = "냥냥")) }
-            
+            val booleanChanged = remember { mutableStateOf(0) }
+            val isRunning = remember { mutableStateOf(true) }
+            var straightBoolean by remember { mutableStateOf(false) }
+
             var gameStateData by remember { mutableStateOf(GameState(data = listOf())) }
             var timeLeft by remember { mutableStateOf(180) }
             var numberOfPlayers by remember { mutableStateOf(10) }
-            var numberOfAlivePlayers by remember { mutableStateOf(numberOfPlayers) }
-
+            var numberOfPlayersNotFinished by remember { mutableStateOf(numberOfPlayers) }
+            
             val isVoicing by remember { mutableStateOf(false) }
-
-            var isPlayerFinished by remember { mutableStateOf(false) }
-            var isGameOver by remember { mutableStateOf(false) }
+            val canMove = !isVoicing
+//            val canMove = false
 
             val context = LocalContext.current
-
             val sensorManager = remember { context.getSystemService(SensorManager::class.java) }
             val accelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
 
@@ -99,102 +95,24 @@ class InGameClass {
             var yValue by remember { mutableFloatStateOf(0f) }
             var zValue by remember { mutableFloatStateOf(0f) }
             val threshold = 15f
-
-            val canMove = !isVoicing
-
-            var motionDetected by remember { mutableStateOf(false) } // true 되면 탈락 요청
-
-            var isTagged by remember { mutableStateOf(false) } // true 되면 생존 요청
-
-            var isFailedByTimeOut by remember { mutableStateOf(false) } // true 되면 탈락 요청
             
-            val eliminated = motionDetected && isFailedByTimeOut
-            val succeeded = isTagged
-
-            var firstEliminated by remember { mutableStateOf(false) }
-            var firstSucceeded by remember { mutableStateOf(false) }
-            LaunchedEffect(eliminated) {
-                if (!firstEliminated)
-                {
-                    firstEliminated = true
-                }
-                else
-                {
-                    withContext(Dispatchers.IO)
-                    {
-                        apiService.sendFailed(userId)
-                    }
-                }
-            }
+            var hasMotionDetected by remember { mutableStateOf(false) }
+            var isTagged by remember { mutableStateOf(false) }
+            var isFailedByTimeOut by remember { mutableStateOf(false) }
             
-            LaunchedEffect(succeeded) {
-                if (!firstSucceeded)
-                {
-                    firstSucceeded = true
-                }
-                else
-                {
-                    withContext(Dispatchers.IO)
-                    {
-                        apiService.sendSuccess(userId)
-                    }
-                }
-            }
-            var BooleanChanged = remember { mutableStateOf(0) }
-            var isRunning = remember { mutableStateOf(true) }
-            var straightBoolean by remember { mutableStateOf(false) }
-            var crossBoolean by remember { mutableStateOf(true) }
-            LaunchedEffect(Unit) {
-                while(isRunning.value) {
-                    try {
-                        withContext(Dispatchers.IO) {
-                            apiService.connectionCheck(userId)
-                            var getstate = apiService.getGameState()
-                            gameStateData = getstate
-                        }
-                        timeLeft = gameStateData.data[8].toInt()
-                        numberOfAlivePlayers = gameStateData.data[6].toInt()
-                        numberOfPlayers = gameStateData.data[5].toInt()
+            val isEliminated = (hasMotionDetected || isFailedByTimeOut) && !isTagged
+            val isSucceeded = isTagged && !(hasMotionDetected || isFailedByTimeOut)
+            var isFirstEliminated by remember { mutableStateOf(false) }
+            var isFirstSucceeded by remember { mutableStateOf(false) }
 
-                        if(gameStateData.data[0] == "false" && straightBoolean)
-                        {
-                            BooleanChanged.value++
-                            straightBoolean = false
-                        }
-                        if(gameStateData.data[0] == "true"&& !straightBoolean)
-                        {
-                            BooleanChanged.value++
-                            straightBoolean = true
-                        }
-                        if(BooleanChanged.value == 2)
-                        {
-                            isRunning.value = false
-                        }
-                        delay(100)
-                    } catch (e: Exception) {
-                        println("도비")
-                    }
-                }
-            }
-            
-            LaunchedEffect(timeLeft) {
-                if(timeLeft <= 0 && !isPlayerFinished) {
-                    isFailedByTimeOut = true
-                    isPlayerFinished = true
-                }
+            var isGameOver by remember { mutableStateOf(false) }
+
+            if(timeLeft <= 0 && !isSucceeded && !hasMotionDetected) {
+                isFailedByTimeOut = true
             }
 
-            LaunchedEffect(timeLeft, numberOfAlivePlayers) {
-                if(timeLeft <= 0 || numberOfAlivePlayers <= 0) {
-                    isGameOver = true
-                }
-            }
-
-            LaunchedEffect(isGameOver) {
-                if(isGameOver) {
-                    delay(3000)
-                    onNavigateToGameResult()
-                }
+            if(timeLeft <= 0 || numberOfPlayersNotFinished <= 0) {
+                isGameOver = true
             }
 
             if (context is Activity) {
@@ -205,12 +123,70 @@ class InGameClass {
                             tag?.let {
                                 if (!isGameOver) {
                                     isTagged = true
-                                    isPlayerFinished = true
                                 }
                             }
                         }
                         else -> {}
                     }
+                }
+            }
+
+//            // 튕김 버그 발생 중
+//            LaunchedEffect(isEliminated) {
+//                if (!isFirstEliminated) {
+//                    isFirstEliminated = true
+//                } else {
+//                    withContext(Dispatchers.IO) {
+//                        apiService.sendFailed(userId)
+//                    }
+//                }
+//            }
+//
+//            // 튕김 버그 발생 중
+//            LaunchedEffect(isSucceeded) {
+//                if (!isFirstSucceeded) {
+//                    isFirstSucceeded = true
+//                } else {
+//                    withContext(Dispatchers.IO) {
+//                        apiService.sendSuccess(userId)
+//                    }
+//                }
+//            }
+
+            LaunchedEffect(Unit) {
+                while(isRunning.value) {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            apiService.connectionCheck(userId)
+                            val getState = apiService.getGameState()
+                            gameStateData = getState
+                        }
+                        timeLeft = gameStateData.data[8].toInt()
+                        numberOfPlayersNotFinished = gameStateData.data[6].toInt()
+                        numberOfPlayers = gameStateData.data[5].toInt()
+
+                        if(gameStateData.data[0] == "false" && straightBoolean) {
+                            booleanChanged.value++
+                            straightBoolean = false
+                        }
+                        if(gameStateData.data[0] == "true" && !straightBoolean) {
+                            booleanChanged.value++
+                            straightBoolean = true
+                        }
+                        if(booleanChanged.value == 2) {
+                            isRunning.value = false
+                        }
+                        delay(100)
+                    } catch (e: Exception) {
+                        println("도비")
+                    }
+                }
+            }
+
+            LaunchedEffect(isGameOver) {
+                if(isGameOver) {
+                    delay(3000)
+                    onNavigateToGameResult()
                 }
             }
 
@@ -224,9 +200,8 @@ class InGameClass {
 
                             val acceleration = sqrt(xValue * xValue + yValue * yValue + zValue * zValue)
 
-                            if (acceleration > threshold && !canMove && !isPlayerFinished) {
-                                motionDetected = true
-                                isPlayerFinished = true
+                            if (acceleration > threshold && !canMove) {
+                                hasMotionDetected = true
                             }
                         }
                     }
@@ -344,11 +319,13 @@ class InGameClass {
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "$numberOfAlivePlayers/$numberOfPlayers",
+                                text = "$numberOfPlayersNotFinished/$numberOfPlayers",
                                 fontSize = (screenWidth * 20/100).sp,
-                                color = if(numberOfAlivePlayers/numberOfPlayers.toFloat() > 2/3f) {
+                                color = if(numberOfPlayers == 0) {
+                                    Red
+                                } else if(numberOfPlayersNotFinished/numberOfPlayers.toFloat() > 2/3f) {
                                     Green
-                                } else if(numberOfAlivePlayers/numberOfPlayers.toFloat() in 1/3f..2/3f) {
+                                } else if(numberOfPlayersNotFinished/numberOfPlayers.toFloat() in 1/3f..2/3f) {
                                     Yellow
                                 } else {
                                     Red
@@ -361,27 +338,16 @@ class InGameClass {
                         }
 
                         Spacer(modifier = Modifier.weight(3f))
-
-                        Button(
-                            onClick = { onNavigateToGameResult() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        ) {
-                            Text("다음 화면")
-                        }
                     }
                 }
             }
             
-            if(isTagged && isPlayerFinished && !isGameOver) {
+            if(isSucceeded && !isGameOver) {
                 GameOverDialog(
                     cause = "survived",
                     size = screenWidth * 80/100
                 )
-            } else if(motionDetected && isPlayerFinished && !isGameOver) {
+            } else if(isEliminated && !isFailedByTimeOut && !isGameOver) {
                 GameOverDialog(
                     cause = "motionDetected",
                     size = screenWidth * 80/100
@@ -391,7 +357,7 @@ class InGameClass {
             if(isGameOver) {
                 Dialog(onDismissRequest = {}) {
                     Text(
-                        text = if(!isPlayerFinished) "시간 초과" else "게임 종료",
+                        text = if(isFailedByTimeOut) "시간 초과" else "게임 종료",
                         fontSize = (screenWidth * 20 / 100).sp,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -450,7 +416,6 @@ fun GameOverDialog(cause: String, size: Int) {
                 }
             }
 
-
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -479,138 +444,3 @@ fun GameOverDialog(cause: String, size: Int) {
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun InGameScreenPreview() {
-//    val screenWidth: Int = LocalConfiguration.current.screenWidthDp
-//    val screenHeight: Int = LocalConfiguration.current.screenHeightDp
-//
-//    SharonAppTheme {
-//        Scaffold { innerPadding ->
-//            Box(
-//                modifier = Modifier
-//                    .background(MaterialTheme.colorScheme.background)
-//                    .fillMaxSize()
-//                    .padding(innerPadding)
-//            ) {
-//                Column(
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                    verticalArrangement = Arrangement.Center,
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                        .padding(8.dp)
-//                ) {
-//                    Row(
-//                        horizontalArrangement = Arrangement.Center,
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        modifier = Modifier.weight(4f)
-//                    ) {
-//                        Spacer(modifier = Modifier.weight(1f))
-//
-//                        Box(
-//                            modifier = Modifier
-//                                .weight(1.5f)
-//                                .clip(RoundedCornerShape(5.dp))
-//                                .background(Color.DarkGray)
-//                                .fillMaxHeight(0.25f)
-//                        ) {
-//                            Row(
-//                                verticalAlignment = Alignment.CenterVertically,
-//                                horizontalArrangement = Arrangement.Center,
-//                                modifier = Modifier.fillMaxSize()
-//                            ) {
-//                                Spacer(modifier = Modifier.weight(1f))
-//                                Box(
-//                                    modifier = Modifier
-//                                        .clip(CircleShape)
-//                                        .background(if(true) Red else Color.Black)
-//                                        .weight(3f)
-//                                        .aspectRatio(1f)
-//                                )
-//                                Spacer(modifier = Modifier.weight(1f))
-//                                Box(
-//                                    modifier = Modifier
-//                                        .clip(CircleShape)
-//                                        .background(Color.Black)
-//                                        .weight(3f)
-//                                        .aspectRatio(1f)
-//                                )
-//                                Spacer(modifier = Modifier.weight(1f))
-//                                Box(
-//                                    modifier = Modifier
-//                                        .clip(CircleShape)
-//                                        .background(if(true) Green else Color.Black)
-//                                        .weight(3f)
-//                                        .aspectRatio(1f)
-//                                )
-//                                Spacer(modifier = Modifier.weight(1f))
-//                            }
-//                        }
-//                        Box(
-//                            modifier = Modifier
-//                                .weight(0.7f)
-//                                .height(5.dp)
-//                                .clip(RectangleShape)
-//                                .background(Color.DarkGray)
-//                        )
-//
-//                        Spacer(modifier = Modifier.weight(0.3f))
-//                    }
-//
-//                    Column(
-//                        horizontalAlignment = Alignment.CenterHorizontally,
-//                        verticalArrangement = Arrangement.Center
-//                    ) {
-//                        Text(
-//                            text = "60",
-//                            fontSize = (screenWidth * 25/100).sp,
-//                            color = Green
-//                        )
-//                        Text(
-//                            text = "남은 시간(초)",
-//                            fontSize = (screenWidth * 7/100).sp
-//                        )
-//                    }
-//
-//                    Spacer(modifier = Modifier.weight(1f))
-//
-//                    Column(
-//                        horizontalAlignment = Alignment.CenterHorizontally,
-//                        verticalArrangement = Arrangement.Center
-//                    ) {
-//                        Text(
-//                            text = "9/10",
-//                            fontSize = (screenWidth * 20/100).sp,
-//                            color = Green
-//                        )
-//                        Text(
-//                            text = "현재 생존자(명)",
-//                            fontSize = (screenWidth * 7/100).sp
-//                        )
-//                    }
-//
-//                    Spacer(modifier = Modifier.weight(3f))
-//
-//                    Button(
-//                        onClick = {},
-//                        colors = ButtonDefaults.buttonColors(
-//                            containerColor = MaterialTheme.colorScheme.primary,
-//                            contentColor = MaterialTheme.colorScheme.onPrimary
-//                        ),
-//                        modifier = Modifier.align(Alignment.CenterHorizontally)
-//                    ) {
-//                        Text("다음 화면")
-//                    }
-//                }
-//            }
-//        }
-//        Dialog(onDismissRequest = {}) {
-//            Text(
-//                text = "게임 종료",
-//                fontSize = (screenWidth * 20 / 100).sp,
-//                color = MaterialTheme.colorScheme.primary
-//            )
-//        }
-//    }
-//}

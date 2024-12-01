@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
 
             SharonAppTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = Countdown) {
+                NavHost(navController = navController, startDestination = Start) {
                     composable<Start> {
                         StartClass.StartScreen(
                             onNavigateToHome = {
