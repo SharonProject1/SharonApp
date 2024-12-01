@@ -1,17 +1,22 @@
 package com.example.sharonapp.screens
 
+import com.example.sharonapp.utility.NFCViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.PendingIntent
+import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.nfc.NfcAdapter
 import android.nfc.Tag
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,8 +31,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,8 +51,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.navigation.NavController
-import com.example.sharonapp.GameResult
 import com.example.sharonapp.InGame
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Yellow
@@ -60,12 +62,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.math.sqrt
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class InGameClass {
     companion object {
-        @SuppressLint("NewApi")
         @Composable
         fun InGameScreen(
             inGame: InGame,
+            nfcViewModel : NFCViewModel,
             onNavigateToGameResult: () -> Unit
         ) {
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
@@ -88,6 +91,9 @@ class InGameClass {
             val canMove = false
 
             val context = LocalContext.current
+
+            val activity = context as? Activity
+
             val sensorManager = remember { context.getSystemService(SensorManager::class.java) }
             val accelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
 
@@ -96,42 +102,25 @@ class InGameClass {
             var zValue by remember { mutableFloatStateOf(0f) }
             val threshold = 15f
             
-            var hasMotionDetected by remember { mutableStateOf(false) }
-            var isTagged by remember { mutableStateOf(false) }
+            val hasMotionDetected = nfcViewModel.hasMotionDetected.collectAsState()
+            val isTagged = nfcViewModel.isTagged.collectAsState()
             var isFailedByTimeOut by remember { mutableStateOf(false) }
             
-            val isEliminated = (hasMotionDetected || isFailedByTimeOut) && !isTagged
-            val isSucceeded = isTagged && !(hasMotionDetected || isFailedByTimeOut)
+            val isEliminated = hasMotionDetected.value || isFailedByTimeOut
+            val isSucceeded = isTagged.value
             var isFirstEliminated by remember { mutableStateOf(false) }
             var isFirstSucceeded by remember { mutableStateOf(false) }
 
-            var isGameOver by remember { mutableStateOf(false) }
+            val isGameOver = nfcViewModel.isGameOver.collectAsState()
 
-            if(timeLeft <= 0 && !isSucceeded && !hasMotionDetected) {
+            if(timeLeft <= 0 && !isSucceeded && !hasMotionDetected.value) {
                 isFailedByTimeOut = true
             }
 
             if(timeLeft <= 0 || numberOfPlayersNotFinished <= 0) {
-                isGameOver = true
+                nfcViewModel.setGameOver(true)
             }
 
-            if (context is Activity) {
-                context.intent?.let { intent ->
-                    when(intent.action) {
-                        NfcAdapter.ACTION_TAG_DISCOVERED -> {
-                            val tag: Tag? = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java)
-                            tag?.let {
-                                if (!isGameOver) {
-                                    isTagged = true
-                                }
-                            }
-                        }
-                        else -> {}
-                    }
-                }
-            }
-
-            // 튕김 버그 발생 중
             LaunchedEffect(isEliminated) {
                 if (!isFirstEliminated) {
                     isFirstEliminated = true
@@ -146,7 +135,6 @@ class InGameClass {
                 }
             }
 
-            // 튕김 버그 발생 중
             LaunchedEffect(isSucceeded) {
 
                 if (!isFirstSucceeded) {
@@ -195,10 +183,30 @@ class InGameClass {
                 }
             }
 
-            LaunchedEffect(isGameOver) {
-                if(isGameOver) {
+            LaunchedEffect(isGameOver.value) {
+                if(isGameOver.value) {
                     delay(2000)
                     onNavigateToGameResult()
+                }
+            }
+
+            DisposableEffect(activity) {
+                val intent = Intent(context, activity?.javaClass).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
+                val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_MUTABLE)
+                val filters = arrayOf(IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED))
+                NfcAdapter.getDefaultAdapter(context)?.enableForegroundDispatch(activity, pendingIntent, filters, null)
+
+                onDispose {
+                    NfcAdapter.getDefaultAdapter(context)?.disableForegroundDispatch(activity)
+                    nfcViewModel.setIsTagged(false)
+                }
+            }
+
+            LaunchedEffect(activity) {
+                activity?.intent?.let { intent ->
+                    handleNewIntent(intent, nfcViewModel)
                 }
             }
 
@@ -212,8 +220,8 @@ class InGameClass {
 
                             val acceleration = sqrt(xValue * xValue + yValue * yValue + zValue * zValue)
 
-                            if (acceleration > threshold && !canMove) {
-                                hasMotionDetected = true
+                            if (acceleration > threshold && !canMove && !isSucceeded) {
+                                nfcViewModel.setHasMotionDetected(true)
                             }
                         }
                     }
@@ -354,25 +362,36 @@ class InGameClass {
                 }
             }
             
-            if(isSucceeded && !isGameOver) {
+            if(isSucceeded && !isGameOver.value) {
                 GameOverDialog(
                     cause = "survived",
                     size = screenWidth * 80/100
                 )
-            } else if(isEliminated && !isFailedByTimeOut && !isGameOver) {
+            } else if(isEliminated && !isFailedByTimeOut && !isGameOver.value) {
                 GameOverDialog(
                     cause = "motionDetected",
                     size = screenWidth * 80/100
                 )
             }
 
-            if(isGameOver) {
+            if(isGameOver.value) {
                 Dialog(onDismissRequest = {}) {
                     Text(
                         text = if(isFailedByTimeOut) "시간 초과" else "게임 종료",
                         fontSize = (screenWidth * 20 / 100).sp,
                         color = MaterialTheme.colorScheme.primary
                     )
+                }
+            }
+        }
+
+        fun handleNewIntent(intent: Intent?, nfcViewModel: NFCViewModel) {
+            if (intent?.action == NfcAdapter.ACTION_TAG_DISCOVERED) {
+                val tag: Tag? = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java)
+                tag?.let {
+                    if (!nfcViewModel.isGameOver.value && !nfcViewModel.hasMotionDetected.value) {
+                        nfcViewModel.setIsTagged(true)
+                    }
                 }
             }
         }

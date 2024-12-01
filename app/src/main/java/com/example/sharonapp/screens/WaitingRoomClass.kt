@@ -1,6 +1,5 @@
 package com.example.sharonapp.screens
 
-import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures

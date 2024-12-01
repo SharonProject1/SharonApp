@@ -68,12 +68,12 @@ class GameResultClass {
                 }
                 catch (e: Exception) {
                     val tempData = listOf(
-                        listOf("생존", "1위", "11", "None", "-"),
-                        listOf("생존", "2위", "22", "None", "-"),
-                        listOf("탈락", "3위", "33", "None", "-"),
-                        listOf("탈락", "4위", "44", "None", "-"),
-                        listOf("탈락", "5위", "55", "None", "-"),
-                        listOf("연결 끊김", "-", "66", "None", "-")
+                        listOf("Survived", "1", "11", "None", "-"),
+                        listOf("Survived", "2", "22", "None", "-"),
+                        listOf("Failed", "3", "33", "None", "-"),
+                        listOf("Failed", "4", "44", "None", "-"),
+                        listOf("Failed", "5", "55", "None", "-"),
+                        listOf("Disconnected", "-", "66", "None", "-")
                     )
                     gameResultData = tempData
                 }
@@ -102,7 +102,10 @@ class GameResultClass {
                         )
                         Spacer(modifier = Modifier.weight(1f))
 
-                        val pagerState = rememberPagerState(pageCount = { gameResultData.size })
+                        val pagerState = rememberPagerState(
+                            pageCount = { gameResultData.size },
+//                            initialPage = gameResultData.indexOfFirst { it[3] == userId }
+                        )
                         HorizontalPager(
                             state = pagerState,
                             modifier = Modifier
@@ -129,7 +132,7 @@ class GameResultClass {
                                     Text(
                                         text = gameResultData[page][0],
                                         fontSize = (screenWidth * 10/100).sp,
-                                        color = if(gameResultData[page][0] == "생존") Green else Red
+                                        color = if(gameResultData[page][0] == "Survived") Green else Red
                                     )
                                     Row(
                                         modifier = Modifier.weight(1f)
@@ -145,7 +148,7 @@ class GameResultClass {
                                 }
                                 Box {
                                     Image(
-                                        painter = painterResource(id = R.drawable.test_image),
+                                        painter = painterResource(id = R.drawable.back),
                                         contentDescription = "test image",
                                         modifier = Modifier.size((screenWidth * 80/100).dp)
                                     )
