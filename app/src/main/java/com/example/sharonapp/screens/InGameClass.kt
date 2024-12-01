@@ -185,7 +185,7 @@ class InGameClass {
 
             LaunchedEffect(isGameOver) {
                 if(isGameOver) {
-                    delay(3000)
+                    delay(2000)
                     onNavigateToGameResult()
                 }
             }

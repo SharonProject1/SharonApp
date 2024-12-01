@@ -46,10 +46,12 @@ class HomeClass {
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
 
             var codeInput by remember { mutableStateOf("") }
+            var idInput by remember { mutableStateOf("") }
+
+            val isButtonEnabled = codeInput.isNotBlank() && idInput.isNotBlank()
 
             val coroutineScope = rememberCoroutineScope()
             val apiService2 = remember { SecondApiService() }
-            var idInput by remember { mutableStateOf("") }
 
             Scaffold { innerPadding ->
                 Box(
@@ -78,7 +80,10 @@ class HomeClass {
                         Spacer(modifier = Modifier.height((screenHeight * 10/100).dp))
                         TextField(
                             value = codeInput,
-                            onValueChange = { codeInput = it },
+                            onValueChange = {
+                                codeInput = it
+//                                isButtonEnabled.value = it.isNotEmpty()
+                            },
                             placeholder = { Text(text = "대기실 코드") },
                             modifier = Modifier.fillMaxWidth(0.8f),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
@@ -86,13 +91,17 @@ class HomeClass {
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         TextField(
                             value = idInput,
-                            onValueChange = { idInput = it },
+                            onValueChange = {
+                                idInput = it
+//                                isButtonEnabled.value = it.isNotEmpty()
+                            },
                             placeholder = { Text(text = "닉네임") },
                             modifier = Modifier.fillMaxWidth(0.8f),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                         )
                         Spacer(modifier = Modifier.height((screenHeight * 2/100).dp))
                         Button(
+                            enabled = isButtonEnabled,
                             onClick = {
                                 coroutineScope.launch {
                                     try{

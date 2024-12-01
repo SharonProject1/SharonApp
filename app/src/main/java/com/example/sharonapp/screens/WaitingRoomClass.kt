@@ -249,13 +249,10 @@ fun PlayerBox(
         return
     }
     var textState by remember { mutableStateOf("") }
-    var figureColor = Red
     val isReady = playerData[index][2]
+
     val apiService = remember { createApiService() }
     var isInitialized by remember { mutableStateOf(false) }
-
-    if (isReady == "true")
-        figureColor = Green
 
     Box(
         modifier = Modifier
@@ -288,7 +285,7 @@ fun PlayerBox(
                     Box(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .background(figureColor)
+                            .background(if(isReady.toBoolean()) Green else Red)
                             .weight(1f)
                             .aspectRatio(1f)
                             .fillMaxSize()
@@ -296,7 +293,7 @@ fun PlayerBox(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape((size * 64 / 30).dp, (size * 64 / 30).dp))
-                            .background(figureColor)
+                            .background(if(isReady.toBoolean()) Green else Red)
                             .weight(2f)
                             .aspectRatio(1f)
                             .fillMaxSize()
