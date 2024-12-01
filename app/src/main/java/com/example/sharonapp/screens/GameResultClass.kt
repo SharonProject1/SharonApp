@@ -73,7 +73,7 @@ class GameResultClass {
                         listOf("Failed", "3", "33", "None", "-"),
                         listOf("Failed", "4", "44", "None", "-"),
                         listOf("Failed", "5", "55", "None", "-"),
-                        listOf("Disconnected", "-", "66", "None", "-")
+                        listOf("Disconnected", "0", "66", "None", "-")
                     )
                     gameResultData = tempData
                 }
@@ -102,98 +102,100 @@ class GameResultClass {
                         )
                         Spacer(modifier = Modifier.weight(1f))
 
-                        val pagerState = rememberPagerState(
-                            pageCount = { gameResultData.size },
-//                            initialPage = gameResultData.indexOfFirst { it[3] == userId }
-                        )
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier
-//                                .aspectRatio(0.75f)
-                        ) { page ->
-                            Column(
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth()
+                        if(gameResultData.isNotEmpty()) {
+                            val pagerState = rememberPagerState(
+                                pageCount = { gameResultData.size },
+                                initialPage = gameResultData.indexOfFirst { it[3] == userId }
+                            )
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier
+    //                                .aspectRatio(0.75f)
+                            ) { page ->
+                                Column(
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Row(
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        if(page > 0) {
+                                        Row(
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            if(page > 0) {
+                                                Text(
+                                                    text = "<",
+                                                    fontSize = (screenWidth * 10/100).sp
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.weight(1f))
+                                        }
+                                        Text(
+                                            text = gameResultData[page][0],
+                                            fontSize = (screenWidth * 10/100).sp,
+                                            color = if(gameResultData[page][0] == "Survived") Green else Red
+                                        )
+                                        Row(
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Spacer(modifier = Modifier.weight(1f))
+                                            if (page < gameResultData.size-1) {
+                                                Text(
+                                                    text = ">",
+                                                    fontSize = (screenWidth * 10 / 100).sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                    Box {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.back),
+                                            contentDescription = "test image",
+                                            modifier = Modifier.size((screenWidth * 80/100).dp)
+                                        )
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            modifier = Modifier.align(Alignment.Center)
+                                        ) {
                                             Text(
-                                                text = "<",
-                                                fontSize = (screenWidth * 10/100).sp
+                                                text = gameResultData[page][3],
+                                                fontSize = (screenWidth * 7/100).sp
+                                            )
+                                            Text(
+                                                text = gameResultData[page][2],
+                                                fontSize = if(gameResultData[page][2].length == 3) (screenWidth * 15/100).sp else (screenWidth * 20/100).sp
                                             )
                                         }
-                                        Spacer(modifier = Modifier.weight(1f))
                                     }
-                                    Text(
-                                        text = gameResultData[page][0],
-                                        fontSize = (screenWidth * 10/100).sp,
-                                        color = if(gameResultData[page][0] == "Survived") Green else Red
-                                    )
                                     Row(
-                                        modifier = Modifier.weight(1f)
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
                                     ) {
-                                        Spacer(modifier = Modifier.weight(1f))
-                                        if (page < gameResultData.size-1) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
                                             Text(
-                                                text = ">",
-                                                fontSize = (screenWidth * 10 / 100).sp
+                                                text = gameResultData[page][1],
+                                                fontSize = (screenWidth * 10/100).sp,
+                                                lineHeight = (screenHeight * 8/100).sp
                                             )
+                                            Text("순위")
                                         }
-                                    }
-                                }
-                                Box {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.back),
-                                        contentDescription = "test image",
-                                        modifier = Modifier.size((screenWidth * 80/100).dp)
-                                    )
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.align(Alignment.Center)
-                                    ) {
-                                        Text(
-                                            text = gameResultData[page][3],
-                                            fontSize = (screenWidth * 7/100).sp
-                                        )
-                                        Text(
-                                            text = gameResultData[page][2],
-                                            fontSize = (screenWidth * 20/100).sp
-                                        )
-                                    }
-                                }
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                ) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        Text(
-                                            text = gameResultData[page][1],
-                                            fontSize = (screenWidth * 10/100).sp,
-                                            lineHeight = (screenHeight * 8/100).sp
-                                        )
-                                        Text("순위")
-                                    }
-                                    Spacer(Modifier.width((screenWidth * 10/100).dp))
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        Text(
-                                            text = gameResultData[page][4],
-                                            fontSize = (screenWidth * 10/100).sp,
-                                            lineHeight = (screenHeight * 8/100).sp
-                                        )
-                                        Text("플레이 시간")
+                                        Spacer(Modifier.width((screenWidth * 10/100).dp))
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                text = gameResultData[page][4],
+                                                fontSize = (screenWidth * 10/100).sp,
+                                                lineHeight = (screenHeight * 8/100).sp
+                                            )
+                                            Text("플레이 시간")
+                                        }
                                     }
                                 }
                             }
