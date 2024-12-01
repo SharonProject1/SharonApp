@@ -103,10 +103,9 @@ class GameResultClass {
                         Spacer(modifier = Modifier.weight(1f))
 
                         if(gameResultData.isNotEmpty()) {
-                            val pagerState = rememberPagerState(
-                                pageCount = { gameResultData.size },
-                                initialPage = gameResultData.indexOfFirst { it[3] == userId }
-                            )
+                            
+                            val pagerState = rememberPagerState(pageCount = { gameResultData.size }, initialPage = gameResultData.indexOfFirst { it[3] == userId })
+                            
                             HorizontalPager(
                                 state = pagerState,
                                 modifier = Modifier
@@ -150,7 +149,7 @@ class GameResultClass {
                                     Box {
                                         Image(
                                             painter = painterResource(id = R.drawable.back),
-                                            contentDescription = "test image",
+                                            contentDescription = "back of a T-shirt",
                                             modifier = Modifier.size((screenWidth * 80/100).dp)
                                         )
                                         Column(
