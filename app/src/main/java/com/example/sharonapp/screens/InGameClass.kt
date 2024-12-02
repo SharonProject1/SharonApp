@@ -101,7 +101,7 @@ class InGameClass {
             var xValue by remember { mutableFloatStateOf(0f) }
             var yValue by remember { mutableFloatStateOf(0f) }
             var zValue by remember { mutableFloatStateOf(0f) }
-            val threshold = 15f
+            val threshold = 5f
             
             val hasMotionDetected = nfcViewModel.hasMotionDetected.collectAsState()
             val isTagged = nfcViewModel.isTagged.collectAsState()
