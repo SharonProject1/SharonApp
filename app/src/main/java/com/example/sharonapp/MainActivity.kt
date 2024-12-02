@@ -1,21 +1,15 @@
 package com.example.sharonapp
 
-import com.example.sharonapp.utility.NFCViewModel
+import com.example.sharonapp.utility.SharonViewModel
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -31,7 +25,7 @@ import kotlinx.serialization.Serializable
 
 class MainActivity : ComponentActivity() {
 
-    private val nfcViewModel: NFCViewModel by viewModels()
+    private val sharonViewModel: SharonViewModel by viewModels()
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,8 +35,6 @@ class MainActivity : ComponentActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         setContent {
-
-            var userId by remember { mutableStateOf("None") }
 
             SharonAppTheme {
                 val navController = rememberNavController()
@@ -56,10 +48,10 @@ class MainActivity : ComponentActivity() {
                     }
                     composable<Home> {
                         HomeClass.HomeScreen(
-                            onNavigateToWaitingRoom = { idInput ->
-                                userId = idInput
+                            sharonViewModel = sharonViewModel,
+                            onNavigateToWaitingRoom = {
                                 navController.navigate(
-                                    route = WaitingRoom(userId = userId)
+                                    route = WaitingRoom(userId = sharonViewModel.userId.value)
                                 )
                             }
                         )
@@ -78,7 +70,7 @@ class MainActivity : ComponentActivity() {
                         CountdownClass.CountdownScreen(
                             onNavigateToInGame = {
                                 navController.navigate(
-                                    route = InGame(userId = userId)
+                                    route = InGame(userId = sharonViewModel.userId.value)
                                 )
                             }
                         )
@@ -87,10 +79,10 @@ class MainActivity : ComponentActivity() {
                         val inGame: InGame = navBackStackEntry.toRoute()
                         InGameClass.InGameScreen(
                             inGame = inGame,
-                            nfcViewModel = nfcViewModel,
+                            sharonViewModel = sharonViewModel,
                             onNavigateToGameResult = {
                                 navController.navigate(
-                                    route = GameResult(userId = userId)
+                                    route = GameResult(userId = sharonViewModel.userId.value)
                                 )
                             }
                         )
@@ -99,6 +91,7 @@ class MainActivity : ComponentActivity() {
                         val gameResult: GameResult = navBackStackEntry.toRoute()
                         GameResultClass.GameResultScreen(
                             gameResult = gameResult,
+                            sharonViewModel = sharonViewModel,
                             onNavigateToHome = {
                                 navController.navigate(
                                     route = Home
@@ -114,7 +107,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        InGameClass.handleNewIntent(intent, nfcViewModel)
+        InGameClass.handleNewIntent(intent, sharonViewModel)
     }
 
 }

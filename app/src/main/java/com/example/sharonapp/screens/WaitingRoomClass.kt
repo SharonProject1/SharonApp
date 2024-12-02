@@ -1,7 +1,6 @@
 package com.example.sharonapp.screens
 
 import android.util.Log
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -65,7 +64,7 @@ class WaitingRoomClass {
         @Composable
         fun WaitingRoomScreen(
             waitingRoom: WaitingRoom,
-            onNavigateToCountdown: (userId: String) -> Unit,
+            onNavigateToCountdown: () -> Unit,
             onNavigateToBack: () -> Unit
         ) {
             BackHandler { onNavigateToBack() }
@@ -237,7 +236,7 @@ class WaitingRoomClass {
                     isFirstLaunch.value = false
                 }
                 else if(startSignal) {
-                     onNavigateToCountdown(userId)
+                     onNavigateToCountdown()
                 }
             }
         }

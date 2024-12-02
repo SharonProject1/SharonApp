@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sharonapp.utility.SecondApiService
+import com.example.sharonapp.utility.SharonViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,6 +42,7 @@ class HomeClass {
 
         @Composable
         fun HomeScreen(
+            sharonViewModel: SharonViewModel,
             onNavigateToWaitingRoom: (idInput: String) -> Unit
         ) {
             BackHandler { }
@@ -115,8 +117,10 @@ class HomeClass {
                                         withContext(Dispatchers.IO) {
                                             apiService2.submitNickname(idInput)
                                         }
+                                        sharonViewModel.setUserId(idInput = idInput)
                                         onNavigateToWaitingRoom(idInput)
                                     } catch (e: Exception) {
+                                        sharonViewModel.setUserId(idInput = idInput)
                                         onNavigateToWaitingRoom(idInput)
                                     }
                                 }

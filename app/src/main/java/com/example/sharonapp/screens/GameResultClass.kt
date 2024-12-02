@@ -37,6 +37,7 @@ import com.example.sharonapp.R
 import com.example.sharonapp.ui.theme.Green
 import com.example.sharonapp.ui.theme.Red
 import com.example.sharonapp.utility.ServerResponse
+import com.example.sharonapp.utility.SharonViewModel
 import com.example.sharonapp.utility.createApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -47,6 +48,7 @@ class GameResultClass {
         @Composable
         fun GameResultScreen(
             gameResult: GameResult,
+            sharonViewModel: SharonViewModel,
             onNavigateToHome: () -> Unit
         ) {
             BackHandler { }
@@ -203,7 +205,10 @@ class GameResultClass {
                         Spacer(modifier = Modifier.weight(1f))
 
                         Button(
-                            onClick = { onNavigateToHome() },
+                            onClick = {
+                                sharonViewModel.setUserId(idInput = "None")
+                                onNavigateToHome()
+                            },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer

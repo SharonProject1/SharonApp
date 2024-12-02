@@ -1,6 +1,6 @@
 package com.example.sharonapp.screens
 
-import com.example.sharonapp.utility.NFCViewModel
+import com.example.sharonapp.utility.SharonViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -69,7 +69,7 @@ class InGameClass {
         @Composable
         fun InGameScreen(
             inGame: InGame,
-            nfcViewModel : NFCViewModel,
+            sharonViewModel : SharonViewModel,
             onNavigateToGameResult: () -> Unit
         ) {
             BackHandler { }
@@ -103,8 +103,8 @@ class InGameClass {
             var zValue by remember { mutableFloatStateOf(0f) }
             val threshold = 11.5f
             
-            val hasMotionDetected = nfcViewModel.hasMotionDetected.collectAsState()
-            val isTagged = nfcViewModel.isTagged.collectAsState()
+            val hasMotionDetected = sharonViewModel.hasMotionDetected.collectAsState()
+            val isTagged = sharonViewModel.isTagged.collectAsState()
             var isFailedByTimeOut by remember { mutableStateOf(false) }
             
             val isEliminated = hasMotionDetected.value || isFailedByTimeOut
@@ -112,14 +112,14 @@ class InGameClass {
             var isFirstEliminated by remember { mutableStateOf(false) }
             var isFirstSucceeded by remember { mutableStateOf(false) }
 
-            val isGameOver = nfcViewModel.isGameOver.collectAsState()
+            val isGameOver = sharonViewModel.isGameOver.collectAsState()
 
             if(timeLeft <= 0 && !isSucceeded && !hasMotionDetected.value) {
                 isFailedByTimeOut = true
             }
 
             if(timeLeft <= 0 || numberOfPlayersNotFinished <= 0) {
-                nfcViewModel.setGameOver(true)
+                sharonViewModel.setGameOver(true)
             }
 
             LaunchedEffect(isEliminated) {
@@ -213,13 +213,13 @@ class InGameClass {
 
                 onDispose {
                     NfcAdapter.getDefaultAdapter(context)?.disableForegroundDispatch(activity)
-                    nfcViewModel.setIsTagged(false)
+                    sharonViewModel.setIsTagged(false)
                 }
             }
 
             LaunchedEffect(activity) {
                 activity?.intent?.let { intent ->
-                    handleNewIntent(intent, nfcViewModel)
+                    handleNewIntent(intent, sharonViewModel)
                 }
             }
 
@@ -234,7 +234,7 @@ class InGameClass {
                             val acceleration = sqrt(xValue * xValue + yValue * yValue + zValue * zValue)
 
                             if (acceleration > threshold && !canMove && !isSucceeded) {
-                                nfcViewModel.setHasMotionDetected(true)
+                                sharonViewModel.setHasMotionDetected(true)
                             }
                         }
                     }
@@ -398,12 +398,12 @@ class InGameClass {
             }
         }
 
-        fun handleNewIntent(intent: Intent?, nfcViewModel: NFCViewModel) {
+        fun handleNewIntent(intent: Intent?, sharonViewModel: SharonViewModel) {
             if (intent?.action == NfcAdapter.ACTION_TAG_DISCOVERED) {
                 val tag: Tag? = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java)
                 tag?.let {
-                    if (!nfcViewModel.isGameOver.value && !nfcViewModel.hasMotionDetected.value) {
-                        nfcViewModel.setIsTagged(true)
+                    if (!sharonViewModel.isGameOver.value && !sharonViewModel.hasMotionDetected.value) {
+                        sharonViewModel.setIsTagged(true)
                     }
                 }
             }
