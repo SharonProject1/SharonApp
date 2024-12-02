@@ -1,5 +1,6 @@
 package com.example.sharonapp.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +43,8 @@ class HomeClass {
         fun HomeScreen(
             onNavigateToWaitingRoom: (idInput: String) -> Unit
         ) {
+            BackHandler { }
+
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
 
             var codeInput by remember { mutableStateOf("") }

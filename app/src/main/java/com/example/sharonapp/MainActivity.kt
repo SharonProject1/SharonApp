@@ -6,6 +6,8 @@ import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -68,7 +70,8 @@ class MainActivity : ComponentActivity() {
                             waitingRoom = waitingRoom,
                             onNavigateToCountdown = {
                                 navController.navigate(route = Countdown)
-                            }
+                            },
+                            onNavigateToBack = { navController.navigateUp() }
                         )
                     }
                     composable<Countdown> {

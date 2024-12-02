@@ -1,5 +1,6 @@
 package com.example.sharonapp.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,8 @@ class CountdownClass {
         fun CountdownScreen(
             onNavigateToInGame: () -> Unit
         ) {
+            BackHandler { }
+
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
             var count by remember { mutableStateOf(4) }

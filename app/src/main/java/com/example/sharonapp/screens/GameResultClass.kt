@@ -1,5 +1,6 @@
 package com.example.sharonapp.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +49,8 @@ class GameResultClass {
             gameResult: GameResult,
             onNavigateToHome: () -> Unit
         ) {
+            BackHandler { }
+
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
             val screenHeight: Int = LocalConfiguration.current.screenHeightDp
 

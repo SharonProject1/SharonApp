@@ -16,6 +16,7 @@ import android.hardware.SensorManager
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -71,6 +72,8 @@ class InGameClass {
             nfcViewModel : NFCViewModel,
             onNavigateToGameResult: () -> Unit
         ) {
+            BackHandler { }
+
             val screenWidth: Int = LocalConfiguration.current.screenWidthDp
 
             val userId = inGame.userId
